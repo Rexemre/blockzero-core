@@ -80,9 +80,9 @@ like Bitcoin's — only the mining hardware is different.
 
 ---
 
-## Start mining (testnet)
+## Start mining (mainnet)
 
-Mine **TBLOZ** on the live testnet — your CPU, your blocks.
+Mine **BLOZ** on the live mainnet — your CPU, your blocks.
 
 **Prebuilt binaries:** [Releases](https://github.com/Rexemre/blockzero-core/releases)
 (node `bitcoind`, CLI `bitcoin-cli`, and the GUI wallet `bitcoin-qt`)
@@ -93,13 +93,14 @@ Mine **TBLOZ** on the live testnet — your CPU, your blocks.
 git clone https://github.com/Rexemre/blockzero-ops.git
 cd blockzero-ops\scripts\testnet
 .\install-windows.ps1
-.\mine-testnet.ps1 -Status   # sync to the public seed first
-.\mine-testnet.ps1           # mine
+cd ..\mainnet
+.\mine-mainnet.ps1 -Status   # sync to the public seed first
+.\mine-mainnet.ps1           # mine
 ```
 
-**Public seed:** `217.160.46.61:18210` · **Block explorer:** https://explorer.bloz.org
+**Public seed:** `217.160.46.61:8210` · **Block explorer:** https://explorer.bloz.org
 
-Full guide: [blockzero-docs/quickstart-mining.md](https://github.com/Rexemre/blockzero-docs/blob/main/quickstart-mining.md)
+Testnet (TBLOZ) remains available for development — see [blockzero-docs/quickstart-mining.md](https://github.com/Rexemre/blockzero-docs/blob/main/quickstart-mining.md#testnet-optional).
 
 ---
 
@@ -129,8 +130,8 @@ See [doc/build-unix.md](doc/build-unix.md) and [doc/build-windows-msvc.md](doc/b
 
 ## Status
 
-- **Testnet — live.** Genesis mined, always-on public seed at `217.160.46.61:18210`, block explorer at [explorer.bloz.org](https://explorer.bloz.org), blocks mineable now.
-- **Mainnet — genesis defined, launch pending.**
+- **Mainnet — live.** Launched 2026-06-06 06:06:06 UTC. Public seed at `217.160.46.61:8210`, block explorer at [explorer.bloz.org](https://explorer.bloz.org).
+- **Testnet — live.** Public seed at `217.160.46.61:18210`, explorer at [texplorer.bloz.org](https://texplorer.bloz.org).
 - Upstream baseline: Bitcoin Core v31.0 — see [UPSTREAM.md](UPSTREAM.md).
 
 ---
