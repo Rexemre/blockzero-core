@@ -118,6 +118,8 @@ cd ..\mainnet
 
 **Public seed:** `217.160.46.61:8210` · **Block explorer:** https://explorer.bloz.org
 
+**GUI wallet (`bitcoin-qt`):** download from [Releases](https://github.com/Rexemre/blockzero-core/releases). v1.0.0-rc10+ embeds the seed as a fixed peer; on older builds add `addnode=217.160.46.61:8210` to `%LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf` — see [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet).
+
 Testnet (TBLOZ) remains available for development — see [blockzero-docs/quickstart-mining.md](https://github.com/Rexemre/blockzero-docs/blob/main/quickstart-mining.md#testnet-optional).
 
 ---

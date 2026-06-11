@@ -165,7 +165,7 @@ public:
         // This is fine at runtime as we'll fall back to using them as an addrfetch if they don't support the
         // service bits we want, but we should get them updated to support all service bits wanted by any
         // release ASAP to avoid it where possible.
-        // Block Zero: no seeds yet. Static/DNS seeds are added once seed nodes exist.
+        // Block Zero mainnet: no DNS seeds; fixed seed fallback for out-of-box wallet sync.
         vSeeds.clear();
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,25);
@@ -178,7 +178,7 @@ public:
         m_currency_unit = "BLOZ";
         m_currency_atom = "sat";
 
-        vFixedSeeds.clear();
+        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
 
         fDefaultConsistencyChecks = false;
         m_is_mockable_chain = false;
@@ -267,9 +267,8 @@ public:
         assert(consensus.hashGenesisBlock == uint256{"7462293eec16a92c54a74362af6825688135e2955250024dcc3668ff4f55cfce"});
         assert(genesis.hashMerkleRoot == uint256{"dde7404a2458cd54b4ac603bf860a919f499c47f9b0d00cb27ee0ed59196b9a2"});
 
-        vFixedSeeds.clear();
         vSeeds.clear();
-        // Block Zero: no seeds yet.
+        // Block Zero testnet: fixed seed fallback (217.160.46.61:18210).
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,65);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
@@ -281,7 +280,7 @@ public:
         m_currency_unit = "TBLOZ";
         m_currency_atom = "tsat";
 
-        vFixedSeeds.clear();
+        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_test), std::end(chainparams_seed_test));
 
         fDefaultConsistencyChecks = false;
         m_is_mockable_chain = false;

@@ -1,0 +1,13 @@
+# Block Zero mainnet — copy to bitcoin.conf in your datadir
+# Windows: %LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf
+# Linux/macOS: ~/.blockzero-mainnet/bitcoin.conf
+
+server=1
+txindex=1
+
+[main]
+listen=1
+rpcbind=127.0.0.1
+rpcallowip=127.0.0.1
+rpcport=8332
+addnode=217.160.46.61:8210
