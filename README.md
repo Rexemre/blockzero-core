@@ -25,6 +25,8 @@
 
 **Mainnet seed:** `217.160.46.61:8210`
 
+> **Warning:** Copycat sites (e.g. `.cc` domains) and third-party pools are **not affiliated** with Block Zero — we have no insight into their code and accept **no liability** for malware, wrong-chain mining, fraud, or unfair pool payouts. [Read the full warning →](https://github.com/Rexemre/blockzero-docs/blob/main/official-links.md#warning-copycat-sites--unofficial-services)
+
 ---
 
 ## What Block Zero is
