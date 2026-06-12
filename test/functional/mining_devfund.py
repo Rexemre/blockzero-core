@@ -25,6 +25,8 @@ class MiningDevFundTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
         self.setup_clean_chain = True
+        # RandomX block generation on regtest is much slower than sha256d.
+        self.rpc_timeout = 600
         self.extra_args = [
             # Node 0 enforces and contributes the default 20%.
             [f"-testactivationheight=devfund@{ACTIVATION_HEIGHT}"],
@@ -47,7 +49,8 @@ class MiningDevFundTest(BitcoinTestFramework):
         legacy_wallet = MiniWallet(legacy)
 
         self.log.info("Before activation: coinbase has no fund output")
-        blocks = self.generate(wallet, ACTIVATION_HEIGHT - 2)  # heights 1..108
+        for _ in range(ACTIVATION_HEIGHT - 2):  # heights 1..108
+            blocks = self.generate(wallet, 1)
         assert_equal(self.fund_value_in_coinbase(node, blocks[-1]), 0)
         info = node.getmininginfo()
         assert_equal(info["devfund"]["active"], False)
