@@ -29,9 +29,11 @@
 #include <rpc/mining.h>
 #include <rpc/server.h>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstring>
+#include <limits>
 #include <pow_randomx.h>
 #include <span>
 #include <thread>
@@ -566,6 +568,14 @@ static RPCHelpMan getmininginfo()
                         {RPCResult::Type::STR_AMOUNT, "blockmintxfee", "Minimum feerate of packages selected for block inclusion in " + CURRENCY_UNIT + "/kvB"},
                         {RPCResult::Type::STR, "chain", "current network name (" LIST_CHAIN_NAMES ")"},
                         {RPCResult::Type::STR_HEX, "signet_challenge", /*optional=*/true, "The block challenge (aka. block script), in hexadecimal (only present if the current network is a signet)"},
+                        {RPCResult::Type::OBJ, "devfund", /*optional=*/true, "Block Zero Development & Growth Fund (only present if configured for this network)",
+                        {
+                            {RPCResult::Type::BOOL, "active", "Whether the fund rule applies to the next block"},
+                            {RPCResult::Type::NUM, "activation_height", "Block height at which the fund rule activates"},
+                            {RPCResult::Type::NUM, "min_percent", "Consensus minimum percentage of the block subsidy"},
+                            {RPCResult::Type::NUM, "percent", "Percentage this node contributes when mining (-devfundpercent)"},
+                            {RPCResult::Type::STR, "address", "The public fund address"},
+                        }},
                         {RPCResult::Type::OBJ, "next", "The next block",
                         {
                             {RPCResult::Type::NUM, "height", "The next height"},
@@ -627,6 +637,23 @@ static RPCHelpMan getmininginfo()
         const std::vector<uint8_t>& signet_challenge =
             chainman.GetConsensus().signet_challenge;
         obj.pushKV("signet_challenge", HexStr(signet_challenge));
+    }
+
+    // Block Zero Development & Growth Fund status.
+    if (const Consensus::Params& consensus{chainman.GetConsensus()}; !consensus.dev_fund_script.empty() && consensus.dev_fund_height != std::numeric_limits<int>::max()) {
+        UniValue devfund(UniValue::VOBJ);
+        devfund.pushKV("active", active_chain.Height() + 1 >= consensus.dev_fund_height);
+        devfund.pushKV("activation_height", consensus.dev_fund_height);
+        devfund.pushKV("min_percent", consensus.dev_fund_min_percent);
+        devfund.pushKV("percent", std::clamp(assembler_options.dev_fund_percent, consensus.dev_fund_min_percent, 100));
+        const CScript fund_script{consensus.dev_fund_script.begin(), consensus.dev_fund_script.end()};
+        CTxDestination fund_dest;
+        if (ExtractDestination(fund_script, fund_dest)) {
+            devfund.pushKV("address", EncodeDestination(fund_dest));
+        } else {
+            devfund.pushKV("address", HexStr(consensus.dev_fund_script));
+        }
+        obj.pushKV("devfund", devfund);
     }
     obj.pushKV("warnings", node::GetWarningsForRpc(*CHECK_NONFATAL(node.warnings), IsDeprecatedRPCEnabled("warnings")));
     return obj;

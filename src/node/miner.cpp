@@ -106,6 +106,8 @@ void ApplyArgsManOptions(const ArgsManager& args, BlockAssembler::Options& optio
     if (!options.block_reserved_weight) {
         options.block_reserved_weight = args.GetIntArg("-blockreservedweight");
     }
+    // Block Zero: dev fund share of the subsidy (consensus enforces the minimum).
+    options.dev_fund_percent = static_cast<int>(args.GetIntArg("-devfundpercent", options.dev_fund_percent));
 }
 
 void BlockAssembler::resetBlock()
@@ -175,9 +177,25 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock()
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = m_options.coinbase_output_script;
     // Block subsidy + fees
-    const CAmount block_reward{nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus())};
-    coinbaseTx.vout[0].nValue = block_reward;
-    coinbase_tx.block_reward_remaining = block_reward;
+    const Consensus::Params& consensus{chainparams.GetConsensus()};
+    const CAmount block_reward{nFees + GetBlockSubsidy(nHeight, consensus)};
+
+    // Block Zero Development & Growth Fund: once active, pay the configured
+    // share of the subsidy (clamped to the consensus minimum) to the fund
+    // script, deducted from the miner's output.
+    CAmount dev_fund_amount{0};
+    if (nHeight >= consensus.dev_fund_height && !consensus.dev_fund_script.empty()) {
+        const int percent{std::clamp(m_options.dev_fund_percent, consensus.dev_fund_min_percent, 100)};
+        dev_fund_amount = GetBlockSubsidy(nHeight, consensus) * percent / 100;
+    }
+
+    coinbaseTx.vout[0].nValue = block_reward - dev_fund_amount;
+    if (dev_fund_amount > 0) {
+        const CScript fund_script{consensus.dev_fund_script.begin(), consensus.dev_fund_script.end()};
+        coinbaseTx.vout.emplace_back(dev_fund_amount, fund_script);
+        coinbase_tx.required_outputs.emplace_back(dev_fund_amount, fund_script);
+    }
+    coinbase_tx.block_reward_remaining = block_reward - dev_fund_amount;
 
     // Start the coinbase scriptSig with the block height as required by BIP34.
     // Mining clients are expected to append extra data to this prefix, so

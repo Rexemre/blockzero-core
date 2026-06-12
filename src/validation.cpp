@@ -1846,6 +1846,14 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     return nSubsidy;
 }
 
+CAmount GetDevFundMinimum(int nHeight, const Consensus::Params& consensusParams)
+{
+    if (nHeight < consensusParams.dev_fund_height || consensusParams.dev_fund_script.empty()) {
+        return 0;
+    }
+    return GetBlockSubsidy(nHeight, consensusParams) * consensusParams.dev_fund_min_percent / 100;
+}
+
 CoinsViews::CoinsViews(DBParams db_params, CoinsViewOptions options)
     : m_dbview{std::move(db_params), std::move(options)},
       m_catcherview(&m_dbview) {}
@@ -2608,6 +2616,23 @@ bool Chainstate::ConnectBlock(const CBlock& block, BlockValidationState& state, 
     if (block.vtx[0]->GetValueOut() > blockReward && state.IsValid()) {
         state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cb-amount",
                       strprintf("coinbase pays too much (actual=%d vs limit=%d)", block.vtx[0]->GetValueOut(), blockReward));
+    }
+
+    // Block Zero Development & Growth Fund: from dev_fund_height on, the
+    // coinbase must pay at least dev_fund_min_percent of the block subsidy
+    // to the fund script. Deducted from the existing reward (the bad-cb-amount
+    // limit above is unchanged), so there is no extra inflation.
+    if (const CAmount dev_fund_min{GetDevFundMinimum(pindex->nHeight, params.GetConsensus())}; dev_fund_min > 0 && state.IsValid()) {
+        const auto& fund_bytes{params.GetConsensus().dev_fund_script};
+        const CScript fund_script{fund_bytes.begin(), fund_bytes.end()};
+        CAmount fund_paid{0};
+        for (const CTxOut& out : block.vtx[0]->vout) {
+            if (out.scriptPubKey == fund_script) fund_paid += out.nValue;
+        }
+        if (fund_paid < dev_fund_min) {
+            state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cb-devfund",
+                          strprintf("coinbase pays too little to the dev fund (actual=%d vs required=%d)", fund_paid, dev_fund_min));
+        }
     }
     if (control) {
         auto parallel_result = control->Complete();

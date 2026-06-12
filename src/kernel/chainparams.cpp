@@ -110,6 +110,16 @@ public:
         consensus.CSVHeight = 1;
         consensus.SegwitHeight = 413;
         consensus.MinBIP9WarningHeight = 0;
+        // Block Zero Development & Growth Fund: from block 1500, every
+        // coinbase must pay at least 10% of the block subsidy to the public
+        // fund address bz1qmv7lyweytwy807f6yq78zfvhh5ye5y2y0x2gfl (P2WPKH).
+        // Miners contribute 20% by default (-devfundpercent to change,
+        // consensus minimum 10%). Deducted from the existing reward; no
+        // extra inflation. Coordinated flag-day upgrade like SegWit@413:
+        // all nodes MUST upgrade before block 1500 or the network splits.
+        consensus.dev_fund_height = 1500;
+        consensus.dev_fund_min_percent = 10;
+        consensus.dev_fund_script = "0014db3df23b245b8877f93a203c712597bd099a1144"_hex_v_u8;
         // Block Zero: RandomX-appropriate difficulty floor (matches genesis nBits 0x1e3fffff).
         consensus.powLimit = uint256{"00003fffff000000000000000000000000000000000000000000000000000000"};
         consensus.nPowTargetTimespan = 12 * 60 * 60; // 12 hours (72-block retarget)
@@ -580,6 +590,12 @@ public:
         consensus.CSVHeight = 1;    // Always active unless overridden
         consensus.SegwitHeight = 0; // Always active unless overridden
         consensus.MinBIP9WarningHeight = 0;
+        // Block Zero Development & Growth Fund: disabled by default on
+        // regtest; enable via -testactivationheight=devfund@<height>.
+        // Same witness program as mainnet so tests mirror production rules.
+        consensus.dev_fund_min_percent = 10;
+        consensus.dev_fund_script = "0014db3df23b245b8877f93a203c712597bd099a1144"_hex_v_u8;
+        if (opts.dev_fund_height) consensus.dev_fund_height = *opts.dev_fund_height;
         consensus.powLimit = uint256{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
         consensus.nPowTargetTimespan = 24 * 60 * 60; // one day
         consensus.nPowTargetSpacing = 10 * 60;
