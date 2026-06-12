@@ -11,6 +11,7 @@
 
 #include <array>
 #include <chrono>
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <vector>
@@ -113,6 +114,19 @@ struct Params {
     /** RandomX seed key rotation: epoch length and lag (in blocks). Epoch must be a power of two. */
     int randomx_epoch_blocks;
     int randomx_epoch_lag;
+    /**
+     * Block Zero Development & Growth Fund.
+     *
+     * From dev_fund_height on, every coinbase transaction must contain at
+     * least one output paying dev_fund_script, and the sum of all such
+     * outputs must be >= dev_fund_min_percent of the block subsidy
+     * (fees excluded). The fund is deducted from the existing block reward,
+     * so it causes no extra inflation. Disabled when dev_fund_script is
+     * empty or dev_fund_height is in the far future.
+     */
+    int dev_fund_height{std::numeric_limits<int>::max()};
+    int dev_fund_min_percent{0};
+    std::vector<uint8_t> dev_fund_script{};
     bool fPowAllowMinDifficultyBlocks;
     /**
       * Enforce BIP94 timewarp attack mitigation. On testnet4 this also enforces

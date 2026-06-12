@@ -154,6 +154,8 @@ public:
         std::unordered_map<Consensus::BuriedDeployment, int> activation_heights{};
         bool fastprune{false};
         bool enforce_bip94{false};
+        /** Block Zero: activation height for the Development & Growth Fund (disabled if unset). */
+        std::optional<int> dev_fund_height{};
     };
 
     static std::unique_ptr<const CChainParams> RegTest(const RegTestOptions& options);

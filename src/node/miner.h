@@ -38,6 +38,9 @@ namespace node {
 class KernelNotifications;
 
 static const bool DEFAULT_PRINT_MODIFIED_FEE = false;
+/** Block Zero: default share of the block subsidy paid to the Development &
+ *  Growth Fund once active (consensus minimum: dev_fund_min_percent). */
+static const int DEFAULT_DEV_FUND_PERCENT = 20;
 
 struct CBlockTemplate
 {
@@ -85,6 +88,9 @@ public:
         // Whether to call TestBlockValidity() at the end of CreateNewBlock().
         bool test_block_validity{true};
         bool print_modified_fee{DEFAULT_PRINT_MODIFIED_FEE};
+        // Block Zero: percentage of the block subsidy paid to the dev fund
+        // once active. Clamped to [dev_fund_min_percent, 100] at use.
+        int dev_fund_percent{DEFAULT_DEV_FUND_PERCENT};
     };
 
     explicit BlockAssembler(Chainstate& chainstate, const CTxMemPool* mempool, const Options& options);
