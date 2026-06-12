@@ -862,6 +862,11 @@ static RPCHelpMan getblocktemplate()
                 {RPCResult::Type::NUM, "height", "The height of the next block"},
                 {RPCResult::Type::STR_HEX, "signet_challenge", /*optional=*/true, "Only on signet"},
                 {RPCResult::Type::STR_HEX, "default_witness_commitment", /*optional=*/true, "a valid witness commitment for the unmodified block template"},
+                {RPCResult::Type::OBJ, "devfund", /*optional=*/true, "Block Zero Development & Growth Fund output that must be included in the coinbase (only present once the fund is active)",
+                {
+                    {RPCResult::Type::STR_HEX, "script", "scriptPubKey of the fund output"},
+                    {RPCResult::Type::NUM, "value", "value of the fund output in satoshis (this node's -devfundpercent of the subsidy; the consensus minimum is lower or equal)"},
+                }},
             }},
         },
         RPCExamples{
@@ -1183,9 +1188,23 @@ static RPCHelpMan getblocktemplate()
         result.pushKV("signet_challenge", HexStr(consensusParams.signet_challenge));
     }
 
+    // Required outputs: the witness commitment OP_RETURN and, once active,
+    // the Block Zero Development & Growth Fund output. GBT clients building
+    // their own coinbase must include the fund output ("devfund") in addition
+    // to paying themselves "coinbasevalue".
     if (auto coinbase{block_template->getCoinbaseTx()}; coinbase.required_outputs.size() > 0) {
-        CHECK_NONFATAL(coinbase.required_outputs.size() == 1); // Only one output is currently expected
-        result.pushKV("default_witness_commitment", HexStr(coinbase.required_outputs[0].scriptPubKey));
+        const std::vector<uint8_t>& fund_bytes{consensusParams.dev_fund_script};
+        const CScript fund_script{fund_bytes.begin(), fund_bytes.end()};
+        for (const CTxOut& out : coinbase.required_outputs) {
+            if (!fund_bytes.empty() && out.scriptPubKey == fund_script) {
+                UniValue devfund(UniValue::VOBJ);
+                devfund.pushKV("script", HexStr(out.scriptPubKey));
+                devfund.pushKV("value", out.nValue);
+                result.pushKV("devfund", devfund);
+            } else {
+                result.pushKV("default_witness_commitment", HexStr(out.scriptPubKey));
+            }
+        }
     }
 
     return result;

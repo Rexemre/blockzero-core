@@ -11,6 +11,7 @@ Miners contribute -devfundpercent (default 20%), clamped to the minimum.
 
 from decimal import Decimal
 
+from test_framework.messages import COIN
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal
 from test_framework.wallet import MiniWallet
@@ -77,6 +78,16 @@ class MiningDevFundTest(BitcoinTestFramework):
         self.connect_nodes(0, 1)
         block_112 = self.generate(wallet, 1)[0]
         assert_equal(self.fund_value_in_coinbase(node, block_112), SUBSIDY * 15 / 100)
+
+        self.log.info("getblocktemplate exposes the required fund output")
+        gbt = node.getblocktemplate({"rules": ["segwit"]})
+        fund_sats = int(SUBSIDY * COIN) * 15 // 100
+        assert_equal(gbt["devfund"]["script"], DEV_FUND_SCRIPT_HEX)
+        assert_equal(gbt["devfund"]["value"], fund_sats)
+        assert "default_witness_commitment" in gbt
+        # coinbasevalue is the miner's share, after the fund deduction.
+        assert_equal(gbt["coinbasevalue"], int(SUBSIDY * COIN) - fund_sats)
+        assert "devfund" not in legacy.getblocktemplate({"rules": ["segwit"]})
 
         self.log.info("A coinbase without the fund output is rejected (bad-cb-devfund)")
         self.disconnect_nodes(0, 1)
