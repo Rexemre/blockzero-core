@@ -19,8 +19,16 @@ env:
     -DCMAKE_CXX_STANDARD=20
 
 jobs:
-  linux-x64:
-    runs-on: ubuntu-22.04
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            arch: x64
+          - runner: ubuntu-22.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,7 +50,7 @@ jobs:
       - name: Package
         run: |
           TAG="${GITHUB_REF_NAME}"
-          PKG="blockzero-${TAG}-linux-x64"
+          PKG="blockzero-${TAG}-linux-${{ matrix.arch }}"
           mkdir -p "${PKG}/bin"
           cp build/bin/bitcoind build/bin/bitcoin-cli build/bin/bitcoin-qt build/bin/bz-genesis-miner "${PKG}/bin/"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
@@ -52,8 +60,8 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            blockzero-*-linux-x64.tar.gz
-            blockzero-*-linux-x64.tar.gz.sha256
+            blockzero-*-linux-${{ matrix.arch }}.tar.gz
+            blockzero-*-linux-${{ matrix.arch }}.tar.gz.sha256
 
   macos:
     strategy:
