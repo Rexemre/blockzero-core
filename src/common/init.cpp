@@ -7,12 +7,45 @@
 #include <common/init.h>
 #include <logging.h>
 #include <tinyformat.h>
+#include <util/chaintype.h>
 #include <util/fs.h>
+#include <util/readwritefile.h>
 #include <util/translation.h>
 
 #include <algorithm>
 #include <exception>
 #include <optional>
+
+namespace {
+//! Create a mainnet bitcoin.conf on first run so the GUI works without manual setup.
+void EnsureBlockZeroDefaultConfigFile(const ArgsManager& args, const fs::path& datadir_path, const fs::path& config_path)
+{
+    if (args.IsArgSet("-datadir")) return;
+    if (config_path.empty()) return;
+    const fs::path expected_config = datadir_path / BITCOIN_CONF_FILENAME;
+    if (!fs::equivalent(config_path, expected_config)) return;
+    if (args.GetChainType() != ChainType::MAIN) return;
+    if (fs::exists(expected_config)) return;
+
+    fs::create_directories(datadir_path);
+    const std::string contents =
+        "# Block Zero mainnet (auto-created)\n"
+        "server=1\n"
+        "txindex=1\n"
+        "\n"
+        "[main]\n"
+        "listen=1\n"
+        "rpcbind=127.0.0.1\n"
+        "rpcallowip=127.0.0.1\n"
+        "rpcport=8332\n"
+        "addnode=217.160.46.61:8210\n";
+    if (WriteBinaryFile(expected_config, contents)) {
+        LogInfo("Created default config at %s", fs::PathToString(expected_config));
+    } else {
+        LogWarning("Could not write default config to %s", fs::PathToString(expected_config));
+    }
+}
+} // namespace
 
 namespace common {
 std::optional<ConfigError> InitConfig(ArgsManager& args, SettingsAbortFn settings_abort_fn)
@@ -33,6 +66,8 @@ std::optional<ConfigError> InitConfig(ArgsManager& args, SettingsAbortFn setting
         // bitcoin.conf file just ignores the other file.)
         const fs::path orig_datadir_path{args.GetDataDirBase()};
         const fs::path orig_config_path{AbsPathForConfigVal(args, args.GetPathArg("-conf", BITCOIN_CONF_FILENAME), /*net_specific=*/false)};
+
+        EnsureBlockZeroDefaultConfigFile(args, orig_datadir_path, orig_config_path);
 
         std::string error;
         if (!args.ReadConfigFiles(error, true)) {

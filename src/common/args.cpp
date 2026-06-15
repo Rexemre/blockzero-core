@@ -771,11 +771,8 @@ fs::path GetDefaultDataDir()
     //   Unix mainnet: ~/.blockzero-mainnet
     //   macOS mainnet: ~/Library/Application Support/BlockZeroMainnet
 #ifdef WIN32
-    const fs::path mainnet_path = GetSpecialFolderPath(CSIDL_LOCAL_APPDATA) / "BlockZeroMainnet";
-    const fs::path testnet_base = GetSpecialFolderPath(CSIDL_LOCAL_APPDATA) / "BlockZero";
-    if (fs::exists(mainnet_path)) return mainnet_path;
-    if (fs::exists(testnet_base)) return testnet_base;
-    return mainnet_path;
+    // Mainnet always uses BlockZeroMainnet. Testnet uses BlockZero/testnet3 via GetDataDir().
+    return GetSpecialFolderPath(CSIDL_LOCAL_APPDATA) / "BlockZeroMainnet";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -784,15 +781,10 @@ fs::path GetDefaultDataDir()
     else
         pathRet = fs::path(pszHome);
 #ifdef __APPLE__
-    const fs::path mainnet_path = pathRet / "Library/Application Support/BlockZeroMainnet";
-    const fs::path testnet_base = pathRet / "Library/Application Support/BlockZero";
+    return pathRet / "Library/Application Support/BlockZeroMainnet";
 #else
-    const fs::path mainnet_path = pathRet / ".blockzero-mainnet";
-    const fs::path testnet_base = pathRet / ".blockzero";
+    return pathRet / ".blockzero-mainnet";
 #endif
-    if (fs::exists(mainnet_path)) return mainnet_path;
-    if (fs::exists(testnet_base)) return testnet_base;
-    return mainnet_path;
 #endif
 }
 
