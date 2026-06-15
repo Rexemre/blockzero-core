@@ -181,6 +181,7 @@ jobs:
           mkdir -p "${PKG}/bin" "${PKG}/bin/platforms"
           cp build/bin/Release/bitcoind.exe build/bin/Release/bitcoin-cli.exe build/bin/Release/bitcoin-qt.exe build/bin/Release/bz-genesis-miner.exe "${PKG}/bin/"
           cp "${QT_BIN}/Qt6Core.dll" "${QT_BIN}/Qt6Gui.dll" "${QT_BIN}/Qt6Widgets.dll" "${QT_BIN}/Qt6Network.dll" "${QT_BIN}/Qt6Svg.dll" "${PKG}/bin/"
+          cp build/vcpkg_installed/x64-windows/bin/*.dll "${PKG}/bin/" 2>/dev/null || true
           cp "qt/${QT_VERSION}/${QT_PATH}/plugins/platforms/qwindows.dll" "${PKG}/bin/platforms/"
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
