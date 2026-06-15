@@ -20,7 +20,7 @@
 | **Explorer** | https://explorer.bloz.org · testnet: https://texplorer.bloz.org |
 | **Bridge** | https://bridge.bloz.org |
 | **Discord** | https://discord.gg/FbJzrwAU2W |
-| **X (Twitter)** | https://x.com/BlockZeroBLOZ |
+| **X (Twitter)** | https://x.com/Block_Zero_2009 |
 | **Full list** | [official-links.md](https://github.com/Rexemre/blockzero-docs/blob/main/official-links.md) |
 
 **Mainnet seed:** `217.160.46.61:8210`
