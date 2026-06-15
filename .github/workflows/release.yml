@@ -119,7 +119,7 @@ jobs:
     timeout-minutes: 180
     env:
       PYTHONUTF8: 1
-      QT_VERSION: "6.7.3"
+      QT_VERSION: "6.8.3"
       QT_ARCH: "win64_msvc2022_64"
       VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
     steps:
@@ -139,11 +139,8 @@ jobs:
 
       - name: Install Qt (prebuilt, avoids vcpkg qttools OOM)
         run: |
-          pip install aqtinstall==3.1.18
-          aqt install-qt windows desktop $env:QT_VERSION $env:QT_ARCH `
-            -O qt `
-            -m qt5compat `
-            --archives qtbase qttools qtsvg
+          pip install aqtinstall
+          aqt install-qt windows desktop $env:QT_VERSION $env:QT_ARCH -O qt --archives qtbase qttools qtsvg
           $qtRoot = Join-Path $PWD "qt\$($env:QT_VERSION)\$($env:QT_ARCH)"
           echo "CMAKE_PREFIX_PATH=$qtRoot" >> $env:GITHUB_ENV
           echo "$qtRoot\bin" >> $env:GITHUB_PATH
