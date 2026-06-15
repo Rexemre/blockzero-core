@@ -328,6 +328,15 @@ fs::path ArgsManager::GetDataDir(bool net_specific) const
     }
 
     if (net_specific && !BaseParams().DataDir().empty()) {
+#ifdef WIN32
+        // Testnet chain data lives under %LOCALAPPDATA%\BlockZero\testnet3 (blockzero-ops).
+        if (datadir.empty() && BaseParams().DataDir() == "testnet3") {
+            const fs::path testnet_base = GetSpecialFolderPath(CSIDL_LOCAL_APPDATA) / "BlockZero";
+            if (fs::exists(testnet_base)) {
+                path = testnet_base;
+            }
+        }
+#endif
         path /= fs::PathFromString(BaseParams().DataDir());
     }
 
@@ -756,19 +765,17 @@ bool HasTestOption(const ArgsManager& args, const std::string& test_option)
 
 fs::path GetDefaultDataDir()
 {
-    // Windows:
-    //   old: C:\Users\Username\AppData\Roaming\Bitcoin
-    //   new: C:\Users\Username\AppData\Local\Bitcoin
-    // macOS: ~/Library/Application Support/Bitcoin
-    // Unix-like: ~/.bitcoin
+    // Block Zero default datadirs (see blockzero-ops / blockzero-wallet docs):
+    //   Windows mainnet: %LOCALAPPDATA%\BlockZeroMainnet
+    //   Windows testnet base: %LOCALAPPDATA%\BlockZero  (chain data in testnet3/)
+    //   Unix mainnet: ~/.blockzero-mainnet
+    //   macOS mainnet: ~/Library/Application Support/BlockZeroMainnet
 #ifdef WIN32
-    // Windows
-    // Check for existence of datadir in old location and keep it there
-    fs::path legacy_path = GetSpecialFolderPath(CSIDL_APPDATA) / "Bitcoin";
-    if (fs::exists(legacy_path)) return legacy_path;
-
-    // Otherwise, fresh installs can start in the new, "proper" location
-    return GetSpecialFolderPath(CSIDL_LOCAL_APPDATA) / "Bitcoin";
+    const fs::path mainnet_path = GetSpecialFolderPath(CSIDL_LOCAL_APPDATA) / "BlockZeroMainnet";
+    const fs::path testnet_base = GetSpecialFolderPath(CSIDL_LOCAL_APPDATA) / "BlockZero";
+    if (fs::exists(mainnet_path)) return mainnet_path;
+    if (fs::exists(testnet_base)) return testnet_base;
+    return mainnet_path;
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -777,12 +784,15 @@ fs::path GetDefaultDataDir()
     else
         pathRet = fs::path(pszHome);
 #ifdef __APPLE__
-    // macOS
-    return pathRet / "Library/Application Support/Bitcoin";
+    const fs::path mainnet_path = pathRet / "Library/Application Support/BlockZeroMainnet";
+    const fs::path testnet_base = pathRet / "Library/Application Support/BlockZero";
 #else
-    // Unix-like
-    return pathRet / ".bitcoin";
+    const fs::path mainnet_path = pathRet / ".blockzero-mainnet";
+    const fs::path testnet_base = pathRet / ".blockzero";
 #endif
+    if (fs::exists(mainnet_path)) return mainnet_path;
+    if (fs::exists(testnet_base)) return testnet_base;
+    return mainnet_path;
 #endif
 }
 
