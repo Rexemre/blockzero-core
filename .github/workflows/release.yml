@@ -184,15 +184,14 @@ jobs:
           cp build/vcpkg_installed/x64-windows/bin/*.dll "${PKG}/bin/" 2>/dev/null || true
           cp "qt/${QT_VERSION}/${QT_PATH}/plugins/platforms/qwindows.dll" "${PKG}/bin/platforms/"
           # Bundle MSVC runtime so users without VC++ Redistributable can run bitcoin-qt.exe.
-          powershell -NoProfile -Command "
-            $$crt = Get-ChildItem 'C:/Program Files/Microsoft Visual Studio' -Recurse -Directory -Filter 'Microsoft.VC*.CRT' -ErrorAction SilentlyContinue |
-              Where-Object { $$_.FullName -match '\\\\x64\\\\Microsoft\\.VC' } |
-              Sort-Object FullName -Descending |
-              Select-Object -First 1
-            if (-not $$crt) { throw 'MSVC CRT redist folder not found on runner' }
-            Copy-Item (Join-Path $$crt.FullName '*.dll') '${PKG}/bin/' -Force
-            Write-Host \"Bundled MSVC runtime from $$($$crt.FullName)\"
-          "
+          MSVC_CRIT=$(find "/c/Program Files/Microsoft Visual Studio" -path "*/Redist/MSVC/*/x64/Microsoft.VC*.CRT/msvcp140.dll" 2>/dev/null | sort | tail -1)
+          if [ -z "${MSVC_CRIT}" ]; then
+            echo "MSVC CRT redist not found on runner" >&2
+            exit 1
+          fi
+          MSVC_DIR=$(dirname "${MSVC_CRIT}")
+          cp "${MSVC_DIR}"/*.dll "${PKG}/bin/"
+          echo "Bundled MSVC runtime from ${MSVC_DIR}"
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
           printf '%s\n' 'Block Zero Windows x64' '' 'Requires no separate VC++ install when using this zip (runtime DLLs are in bin/).' '' 'Start wallet: bin\bitcoin-qt.exe' > "${PKG}/README.txt"
