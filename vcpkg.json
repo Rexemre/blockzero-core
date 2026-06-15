@@ -32,6 +32,12 @@
         "libqrencode"
       ]
     },
+    "qrencode": {
+      "description": "QR code support without the Qt vcpkg feature",
+      "dependencies": [
+        "libqrencode"
+      ]
+    },
     "tests": {
       "description": "Build test_bitcoin.exe executable",
       "dependencies": [

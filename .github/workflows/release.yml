@@ -54,7 +54,8 @@ jobs:
           PKG="blockzero-${TAG}-linux-${{ matrix.arch }}"
           mkdir -p "${PKG}/bin"
           cp build/bin/bitcoind build/bin/bitcoin-cli build/bin/bitcoin-qt build/bin/bz-genesis-miner "${PKG}/bin/"
-          cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
+          cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
+          cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
           tar -czf "${PKG}.tar.gz" "${PKG}"
           sha256sum "${PKG}.tar.gz" > "${PKG}.tar.gz.sha256"
 
@@ -102,7 +103,8 @@ jobs:
           else
             cp build/bin/bitcoin-qt "${PKG}/bin/"
           fi
-          cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
+          cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
+          cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
           tar -czf "${PKG}.tar.gz" "${PKG}"
           shasum -a 256 "${PKG}.tar.gz" > "${PKG}.tar.gz.sha256"
 
@@ -117,13 +119,24 @@ jobs:
     timeout-minutes: 180
     env:
       PYTHONUTF8: 1
-      # Cache vcpkg-built deps (incl. Qt) in the GitHub Actions cache, so later
-      # releases restore them instead of recompiling Qt from source (~90 min -> ~15).
+      QT_VERSION: "6.7.3"
+      QT_ARCH: "win64_msvc2022_64"
       VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
 
       - name: Enable vcpkg GHA binary cache
         uses: actions/github-script@v7
@@ -135,10 +148,21 @@ jobs:
       - name: Import Visual Studio env vars
         run: py -3 .github/ci-windows.py standard github_import_vs_env
 
+      - name: Install Qt (prebuilt, avoids vcpkg qttools OOM)
+        run: |
+          pip install aqtinstall==3.1.18
+          aqt install-qt windows desktop $env:QT_VERSION $env:QT_ARCH `
+            -O qt `
+            -m qt5compat `
+            --archives qtbase qttools qtsvg
+          $qtRoot = Join-Path $PWD "qt\$($env:QT_VERSION)\$($env:QT_ARCH)"
+          echo "CMAKE_PREFIX_PATH=$qtRoot" >> $env:GITHUB_ENV
+          echo "$qtRoot\bin" >> $env:GITHUB_PATH
+
       - name: Configure vcpkg
         shell: bash
         run: |
-          echo "set(VCPKG_BUILD_TYPE release)" >> "${VCPKG_INSTALLATION_ROOT}/triplets/x64-windows-static.cmake"
+          echo "set(VCPKG_BUILD_TYPE release)" >> "${VCPKG_INSTALLATION_ROOT}/triplets/x64-windows.cmake"
           sed -i '1s/^/set(ENV{CMAKE_POLICY_VERSION_MINIMUM} 3.5)\n/' "${VCPKG_INSTALLATION_ROOT}/scripts/ports.cmake"
 
       - name: Set VCPKG_ROOT
@@ -147,14 +171,15 @@ jobs:
 
       - name: Generate build system
         run: |
-          cmake -B build --preset vs2026-static `
+          cmake -B build --preset vs2026 `
             -DBUILD_GUI=ON `
             -DENABLE_IPC=OFF `
             -DBUILD_TESTS=OFF `
             -DENABLE_WALLET=ON `
             -DWITH_ZMQ=OFF `
             -DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON `
-            -DVCPKG_MANIFEST_FEATURES="wallet;qt"
+            -DVCPKG_MANIFEST_FEATURES="wallet;qrencode" `
+            -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
 
       - name: Build
         run: cmake --build build --config Release -j $env:NUMBER_OF_PROCESSORS --target bitcoind bitcoin-cli bitcoin-qt bz-genesis-miner
@@ -164,9 +189,13 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME}"
           PKG="blockzero-${TAG}-windows-x64"
-          mkdir -p "${PKG}/bin"
+          QT_BIN="qt/${QT_VERSION}/${QT_ARCH}/bin"
+          mkdir -p "${PKG}/bin" "${PKG}/bin/platforms"
           cp build/bin/Release/bitcoind.exe build/bin/Release/bitcoin-cli.exe build/bin/Release/bitcoin-qt.exe build/bin/Release/bz-genesis-miner.exe "${PKG}/bin/"
-          cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
+          cp "${QT_BIN}/Qt6Core.dll" "${QT_BIN}/Qt6Gui.dll" "${QT_BIN}/Qt6Widgets.dll" "${QT_BIN}/Qt6Network.dll" "${QT_BIN}/Qt6Svg.dll" "${PKG}/bin/"
+          cp "qt/${QT_VERSION}/${QT_ARCH}/plugins/platforms/qwindows.dll" "${PKG}/bin/platforms/"
+          cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
+          cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
           powershell -Command "Compress-Archive -Path '${PKG}' -DestinationPath '${PKG}.zip' -Force"
           sha256sum "${PKG}.zip" > "${PKG}.zip.sha256"
 
@@ -231,7 +260,8 @@ jobs:
           PKG="blockzero-${TAG}-windows-x64-cli"
           mkdir -p "${PKG}/bin"
           cp build/bin/Release/bitcoind.exe build/bin/Release/bitcoin-cli.exe build/bin/Release/bz-genesis-miner.exe "${PKG}/bin/"
-          cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
+          cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
+          cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
           powershell -Command "Compress-Archive -Path '${PKG}' -DestinationPath '${PKG}.zip' -Force"
           sha256sum "${PKG}.zip" > "${PKG}.zip.sha256"
 
