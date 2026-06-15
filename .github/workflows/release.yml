@@ -121,6 +121,7 @@ jobs:
       PYTHONUTF8: 1
       QT_VERSION: "6.8.3"
       QT_ARCH: "win64_msvc2022_64"
+      QT_PATH: "msvc2022_64"
       VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +142,7 @@ jobs:
         run: |
           pip install aqtinstall
           aqt install-qt windows desktop $env:QT_VERSION $env:QT_ARCH -O qt --archives qtbase qttools qtsvg
-          $qtRoot = Join-Path $PWD "qt\$($env:QT_VERSION)\$($env:QT_ARCH)"
+          $qtRoot = Join-Path $PWD "qt\$($env:QT_VERSION)\$($env:QT_PATH)"
           echo "CMAKE_PREFIX_PATH=$qtRoot" >> $env:GITHUB_ENV
           echo "Qt6_DIR=$qtRoot\lib\cmake\Qt6" >> $env:GITHUB_ENV
           echo "$qtRoot\bin" >> $env:GITHUB_PATH
@@ -176,11 +177,11 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME}"
           PKG="blockzero-${TAG}-windows-x64"
-          QT_BIN="qt/${QT_VERSION}/${QT_ARCH}/bin"
+          QT_BIN="qt/${QT_VERSION}/${QT_PATH}/bin"
           mkdir -p "${PKG}/bin" "${PKG}/bin/platforms"
           cp build/bin/Release/bitcoind.exe build/bin/Release/bitcoin-cli.exe build/bin/Release/bitcoin-qt.exe build/bin/Release/bz-genesis-miner.exe "${PKG}/bin/"
           cp "${QT_BIN}/Qt6Core.dll" "${QT_BIN}/Qt6Gui.dll" "${QT_BIN}/Qt6Widgets.dll" "${QT_BIN}/Qt6Network.dll" "${QT_BIN}/Qt6Svg.dll" "${PKG}/bin/"
-          cp "qt/${QT_VERSION}/${QT_ARCH}/plugins/platforms/qwindows.dll" "${PKG}/bin/platforms/"
+          cp "qt/${QT_VERSION}/${QT_PATH}/plugins/platforms/qwindows.dll" "${PKG}/bin/platforms/"
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
           powershell -Command "Compress-Archive -Path '${PKG}' -DestinationPath '${PKG}.zip' -Force"
