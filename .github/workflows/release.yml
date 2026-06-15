@@ -143,6 +143,7 @@ jobs:
           aqt install-qt windows desktop $env:QT_VERSION $env:QT_ARCH -O qt --archives qtbase qttools qtsvg
           $qtRoot = Join-Path $PWD "qt\$($env:QT_VERSION)\$($env:QT_ARCH)"
           echo "CMAKE_PREFIX_PATH=$qtRoot" >> $env:GITHUB_ENV
+          echo "Qt6_DIR=$qtRoot\lib\cmake\Qt6" >> $env:GITHUB_ENV
           echo "$qtRoot\bin" >> $env:GITHUB_PATH
 
       - name: Configure vcpkg
