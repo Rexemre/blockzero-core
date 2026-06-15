@@ -26,6 +26,10 @@
 
 #include <cmath>
 
+#ifdef WIN32
+#include <shlobj.h>
+#endif
+
 namespace {
 //! Return pruning size that will be used if automatic pruning is enabled.
 int GetPruneTargetGB()
@@ -50,8 +54,8 @@ Intro::Intro(QWidget *parent, int64_t blockchain_size_gb, int64_t chain_state_si
     ui->lblExplanation1->setText(ui->lblExplanation1->text()
         .arg(CLIENT_NAME)
         .arg(m_blockchain_size_gb)
-        .arg(2009)
-        .arg(tr("Bitcoin"))
+        .arg(2026)
+        .arg(tr("Block Zero"))
     );
     ui->lblExplanation2->setText(ui->lblExplanation2->text().arg(CLIENT_NAME));
 
@@ -131,7 +135,22 @@ bool Intro::showIfNeeded(bool& did_show_intro, int64_t& prune_MiB)
     /* 1) Default data directory for operating system */
     QString dataDir = GUIUtil::getDefaultDataDirectory();
     /* 2) Allow QSettings to override default dir */
-    dataDir = settings.value("strDataDir", dataDir).toString();
+    QString settingsDir = settings.value("strDataDir", dataDir).toString();
+#ifdef WIN32
+    // Block Zero: QSettings may still point at the legacy Bitcoin Core datadir.
+    try {
+        if (gArgs.GetChainType() == ChainType::MAIN && settingsDir != dataDir) {
+            const QString legacy_bitcoin_dir = GUIUtil::PathToQString(
+                GetSpecialFolderPath(CSIDL_LOCAL_APPDATA) / "Bitcoin");
+            if (settingsDir == legacy_bitcoin_dir) {
+                settingsDir = dataDir;
+                settings.setValue("strDataDir", settingsDir);
+            }
+        }
+    } catch (const std::exception&) {
+    }
+#endif
+    dataDir = settingsDir;
 
     if(!fs::exists(GUIUtil::QStringToPath(dataDir)) || gArgs.GetBoolArg("-choosedatadir", DEFAULT_CHOOSE_DATADIR) || settings.value("fReset", false).toBool() || gArgs.GetBoolArg("-resetguisettings", false))
     {

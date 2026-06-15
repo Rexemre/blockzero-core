@@ -54,22 +54,22 @@ SplashScreen::SplashScreen(const NetworkStyle* networkStyle)
     pixmap.setDevicePixelRatio(devicePixelRatio);
 
     QPainter pixPaint(&pixmap);
-    pixPaint.setPen(QColor(100,100,100));
+    pixPaint.setPen(QColor(245, 247, 250));
 
-    // draw a slightly radial gradient
-    QRadialGradient gradient(QPoint(0,0), splashSize.width()/devicePixelRatio);
-    gradient.setColorAt(0, Qt::white);
-    gradient.setColorAt(1, QColor(247,247,247));
-    QRect rGradient(QPoint(0,0), splashSize);
+    // Block Zero dark gradient (matches bloz.org)
+    QRadialGradient gradient(QPoint(0, 0), splashSize.width() / devicePixelRatio);
+    gradient.setColorAt(0, QColor(17, 22, 29));
+    gradient.setColorAt(1, QColor(5, 7, 10));
+    QRect rGradient(QPoint(0, 0), splashSize);
     pixPaint.fillRect(rGradient, gradient);
 
-    // draw the bitcoin icon, expected size of PNG: 1024x1024
-    QRect rectIcon(QPoint(-150,-122), QSize(430,430));
-
-    const QSize requiredSize(1024,1024);
-    QPixmap icon(networkStyle->getAppIcon().pixmap(requiredSize));
-
-    pixPaint.drawPixmap(rectIcon, icon);
+    // Hero logo from landing page (wide aspect ratio)
+    QPixmap splashLogo(":/icons/bloz-splash");
+    const QSize logoArea(230, 210);
+    QPixmap scaledLogo = splashLogo.scaled(logoArea, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    const int logoX = 12 + (logoArea.width() - scaledLogo.width()) / 2;
+    const int logoY = (splashSize.height() / devicePixelRatio - scaledLogo.height()) / 2;
+    pixPaint.drawPixmap(logoX, logoY, scaledLogo);
 
     // check font size and drawing with
     pixPaint.setFont(QFont(font, 33*fontFactor));
@@ -165,7 +165,7 @@ static void InitMessage(SplashScreen *splash, const std::string &message)
         Qt::QueuedConnection,
         Q_ARG(QString, QString::fromStdString(message)),
         Q_ARG(int, Qt::AlignBottom|Qt::AlignHCenter),
-        Q_ARG(QColor, QColor(55,55,55)));
+        Q_ARG(QColor, QColor(191, 199, 213)));
     assert(invoked);
 }
 
