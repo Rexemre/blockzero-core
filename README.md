@@ -1,31 +1,46 @@
 # BLOCK ZERO
 
-### Modern Bitcoin code. A second chance at Genesis.
+### Missed 2009? **Start at Block Zero.**
 
 **CPU-mineable · Fair launch · Pure proof-of-work · No presale · No insiders · No premine**
+
+Modern **Bitcoin Core v31**. **RandomX** on your laptop. A fresh genesis — mine real blocks with a normal PC, not a datacenter.
+
+**👉 New here? [Join Discord →](https://discord.gg/FbJzrwAU2W)** · **🌐 [bloz.org](https://bloz.org)** · **⛏ [pool.bloz.org](https://pool.bloz.org)** · **🔍 [explorer.bloz.org](https://explorer.bloz.org)**
 
 > Block Zero rebuilds the moment Bitcoin began — when anyone could open a laptop,
 > point it at the network, and mine real blocks. Same battle-tested Bitcoin Core
 > engine, but with a proof-of-work that keeps ASIC and GPU farms out, so the
 > people mining are people, not warehouses.
 
+**Mainnet live** since 2026-06-06 · height **1715+** · seed `217.160.46.61:8210`
+
 ---
 
-## Official links
+## Why Block Zero (in 30 seconds)
 
-| | |
-|---|---|
-| **Website** | https://bloz.org |
-| **Pool** | https://pool.bloz.org *(test release)* |
-| **Explorer** | https://explorer.bloz.org · testnet: https://texplorer.bloz.org |
-| **Bridge** | https://bridge.bloz.org |
-| **Discord** | https://discord.gg/FbJzrwAU2W |
-| **X (Twitter)** | https://x.com/Block_Zero_2009 |
-| **Full list** | [official-links.md](https://github.com/Rexemre/blockzero-docs/blob/main/official-links.md) |
+| | **Block Zero** | Typical altcoin |
+|---|---|---|
+| **Launch** | Fair — mine from genesis | Presale, team allocation, VC |
+| **Mining** | Your **CPU** (RandomX) | ASIC farms or GPU pools |
+| **Codebase** | Modern **Bitcoin Core v31** | Fork-and-forget spaghetti |
+| **Insiders** | **None** | Founders, advisors, VCs |
 
-**Mainnet seed:** `217.160.46.61:8210`
+---
 
-> **Warning:** Copycat sites (e.g. `.cc` domains) and third-party pools are **not affiliated** with Block Zero — we have no insight into their code and accept **no liability** for malware, wrong-chain mining, fraud, or unfair pool payouts. [Read the full warning →](https://github.com/Rexemre/blockzero-docs/blob/main/official-links.md#warning-copycat-sites--unofficial-services)
+## Start in 3 steps
+
+1. **Wallet (Windows)** — download **[v1.0.0-rc24](https://github.com/Rexemre/blockzero-core/releases/tag/v1.0.0-rc24)** (`blockzero-v1.0.0-rc24-windows-x64.zip`), unzip, run `bin\bitcoin-qt.exe`. MSVC runtime is included — no extra install needed.
+2. **Mine on the official pool** — get a `bz1…` address from the wallet, then:
+   ```bash
+   git clone https://github.com/Rexemre/blockzero-ops.git
+   cd blockzero-ops/scripts/mainnet
+   ./mine-pool.sh bz1YOURADDRESS          # Linux / macOS
+   ```
+   Windows: `.\install-windows.ps1` then `.\mine-mainnet.ps1 -Pool` — see [blockzero-ops](https://github.com/Rexemre/blockzero-ops).
+3. **Stuck or curious?** — **[Join Discord](https://discord.gg/FbJzrwAU2W)** (fastest help). Check your stats at [pool.bloz.org](https://pool.bloz.org) with your `bz1` address.
+
+*You should see `New job: … - mining.` and hashrate > 0 within a minute. Pool miner: [pool-miner-v0.6.9](https://github.com/Rexemre/blockzero-ops/releases/tag/pool-miner-v0.6.9).*
 
 ---
 
@@ -63,6 +78,20 @@ RandomX continuously executes randomized programs that depend on a multi-megabyt
 dataset in fast memory. A general-purpose CPU does this naturally; building an ASIC
 for it would essentially mean building a CPU. **That is the whole point** —
 mining stays in the hands of ordinary people.
+
+---
+
+## Official links
+
+| | |
+|---|---|
+| **Website** | https://bloz.org |
+| **Pool** | https://pool.bloz.org |
+| **Explorer** | https://explorer.bloz.org · testnet: https://texplorer.bloz.org |
+| **Bridge** | https://bridge.bloz.org |
+| **Discord** | https://discord.gg/FbJzrwAU2W |
+| **X (Twitter)** | https://x.com/Block_Zero_2009 |
+| **Full list** | [official-links.md](https://github.com/Rexemre/blockzero-docs/blob/main/official-links.md) |
 
 ---
 
@@ -109,16 +138,15 @@ Mine **BLOZ** on the live mainnet — your CPU, your blocks.
 
 ```powershell
 git clone https://github.com/Rexemre/blockzero-ops.git
-cd blockzero-ops\scripts\testnet
+cd blockzero-ops\scripts\mainnet
 .\install-windows.ps1
-cd ..\mainnet
 .\mine-mainnet.ps1 -Status   # sync to the public seed first
-.\mine-mainnet.ps1           # mine
+.\mine-mainnet.ps1 -Pool     # pool mine (recommended)
 ```
 
 **Public seed:** `217.160.46.61:8210` · **Block explorer:** https://explorer.bloz.org
 
-**GUI wallet (`bitcoin-qt`):** download from [Releases](https://github.com/Rexemre/blockzero-core/releases). v1.0.0-rc10+ embeds the seed as a fixed peer; on older builds add `addnode=217.160.46.61:8210` to `%LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf` — see [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet).
+**GUI wallet (`bitcoin-qt`):** download from [Releases](https://github.com/Rexemre/blockzero-core/releases). Latest Windows build: **v1.0.0-rc24** (bundled MSVC runtime). v1.0.0-rc10+ embeds the seed as a fixed peer; on older builds add `addnode=217.160.46.61:8210` to `%LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf` — see [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet).
 
 Testnet (TBLOZ) remains available for development — see [blockzero-docs/quickstart-mining.md](https://github.com/Rexemre/blockzero-docs/blob/main/quickstart-mining.md#testnet-optional).
 
@@ -144,13 +172,15 @@ See [doc/build-unix.md](doc/build-unix.md) and [doc/build-windows-msvc.md](doc/b
 | **blockzero-core** (here) | Node, consensus, RandomX proof-of-work |
 | [blockzero-docs](https://github.com/Rexemre/blockzero-docs) | Guides, specs, status |
 | [blockzero-ops](https://github.com/Rexemre/blockzero-ops) | Mining scripts, seed node, explorer |
-| [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet) | Wallet (in development) |
+| [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet) | Wallet guides & downloads |
+| [blockzero-bridge](https://github.com/Rexemre/blockzero-bridge) | wBLOZ bridge (BSC) |
 
 ---
 
 ## Status
 
 - **Mainnet — live.** Launched 2026-06-06 06:06:06 UTC. Public seed at `217.160.46.61:8210`, block explorer at [explorer.bloz.org](https://explorer.bloz.org).
+- **Official pool — live.** [pool.bloz.org](https://pool.bloz.org) · PPLNS · RandomX CPU mining.
 - **Testnet — live.** Public seed at `217.160.46.61:18210`, explorer at [texplorer.bloz.org](https://texplorer.bloz.org).
 - Upstream baseline: Bitcoin Core v31.0 — see [UPSTREAM.md](UPSTREAM.md).
 
@@ -161,3 +191,5 @@ See [doc/build-unix.md](doc/build-unix.md) and [doc/build-windows-msvc.md](doc/b
 Block Zero is free, open-source software. BLOZ and TBLOZ are experimental coins
 that carry **no** promised value, liquidity or return. Nothing here is financial
 advice. You run the software and participate entirely at your own risk.
+
+> **Warning:** Copycat sites (e.g. `.cc` domains) and third-party pools are **not affiliated** with Block Zero — we have no insight into their code and accept **no liability** for malware, wrong-chain mining, fraud, or unfair pool payouts. [Read the full warning →](https://github.com/Rexemre/blockzero-docs/blob/main/official-links.md#warning-copycat-sites--unofficial-services)
