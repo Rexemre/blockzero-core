@@ -1,19 +1,19 @@
 # BLOCK ZERO
 
-### Missed 2009? **Start at Block Zero.**
+### **Mine with your CPU** — not a warehouse. **Start at Block Zero.**
 
-**CPU-mineable · Fair launch · Pure proof-of-work · No presale · No insiders · No premine**
+**RandomX · CPU-only (no ASIC farms, no GPU edge) · Fair launch · Pure proof-of-work · No presale · No insiders · No premine**
 
-Modern **Bitcoin Core v31**. **RandomX** on your laptop. A fresh genesis — mine real blocks with a normal PC, not a datacenter.
+Modern **Bitcoin Core v31**. **RandomX** runs on ordinary processors — laptop, desktop, home server — not industrial mining hardware.
 
 **👉 New here? [Join Discord →](https://discord.gg/FbJzrwAU2W)** · **🌐 [bloz.org](https://bloz.org)** · **⛏ [pool.bloz.org](https://pool.bloz.org)** · **🔍 [explorer.bloz.org](https://explorer.bloz.org)**
 
-> Block Zero rebuilds the moment Bitcoin began — when anyone could open a laptop,
-> point it at the network, and mine real blocks. Same battle-tested Bitcoin Core
-> engine, but with a proof-of-work that keeps ASIC and GPU farms out, so the
-> people mining are people, not warehouses.
+> A second chance at **Bitcoin-style home mining**: open your wallet, point your
+> **CPU** at the network, and earn blocks. Same battle-tested Bitcoin Core engine —
+> but **RandomX** keeps **ASIC warehouses and GPU farms out**, so miners are people
+> with normal PCs, not datacenters.
 
-**Mainnet live** since 2026-06-06 · height **1715+** · seed `217.160.46.61:8210`
+**Mainnet live** since 2026-06-06 · height **1726+** · seed `217.160.46.61:8210`
 
 ---
 
@@ -22,7 +22,7 @@ Modern **Bitcoin Core v31**. **RandomX** on your laptop. A fresh genesis — min
 | | **Block Zero** | Typical altcoin |
 |---|---|---|
 | **Launch** | Fair — mine from genesis | Presale, team allocation, VC |
-| **Mining** | Your **CPU** (RandomX) | ASIC farms or GPU pools |
+| **Mining** | Your **CPU only** — RandomX blocks ASICs & GPUs | ASIC farms or GPU pools |
 | **Codebase** | Modern **Bitcoin Core v31** | Fork-and-forget spaghetti |
 | **Insiders** | **None** | Founders, advisors, VCs |
 
@@ -58,7 +58,7 @@ and *badly* on ASICs and GPUs. The result:
 
 - **Your everyday PC is competitive again.** No mining rig, no datacenter.
 - **No head start for anyone.** The chain was launched and mined openly from block 1 — no premine, no presale, no team allocation.
-- **It feels like 2009.** Download the node, start mining, earn blocks. The way Bitcoin worked before industrial mining took over.
+- **Home mining again.** Download the node, start mining, earn blocks — when a normal computer was enough, before hashrate belonged to warehouses.
 
 This is **not** Bitcoin and not a token on someone else's chain. It is a fresh
 chain with its own genesis block, its own rules, and its own coin: **BLOZ**.
@@ -87,7 +87,7 @@ mining stays in the hands of ordinary people.
 |---|---|
 | **Website** | https://bloz.org |
 | **Pool** | https://pool.bloz.org |
-| **Explorer** | https://explorer.bloz.org · testnet: https://texplorer.bloz.org |
+| **Explorer** | https://explorer.bloz.org |
 | **Bridge** | https://bridge.bloz.org |
 | **Discord** | https://discord.gg/FbJzrwAU2W |
 | **X (Twitter)** | https://x.com/Block_Zero_2009 |
@@ -181,7 +181,6 @@ See [doc/build-unix.md](doc/build-unix.md) and [doc/build-windows-msvc.md](doc/b
 
 - **Mainnet — live.** Launched 2026-06-06 06:06:06 UTC. Public seed at `217.160.46.61:8210`, block explorer at [explorer.bloz.org](https://explorer.bloz.org).
 - **Official pool — live.** [pool.bloz.org](https://pool.bloz.org) · PPLNS · RandomX CPU mining.
-- **Testnet — live.** Public seed at `217.160.46.61:18210`, explorer at [texplorer.bloz.org](https://texplorer.bloz.org).
 - Upstream baseline: Bitcoin Core v31.0 — see [UPSTREAM.md](UPSTREAM.md).
 
 ---
