@@ -4,6 +4,7 @@
 
 #include <pow_randomx.h>
 
+#include <logging.h>
 #include <randomx/src/randomx.h>
 
 #include <cstdint>
@@ -12,7 +13,51 @@
 #include <thread>
 #include <vector>
 
+#ifdef WIN32
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <sys/sysctl.h>
+#else
+#include <fstream>
+#include <string>
+#endif
+
 namespace {
+
+// Fast mode needs a ~2080 MiB dataset plus cache and headroom. On a box with
+// less than this, allocating/initializing the dataset thrashes swap and stalls
+// mining instead of helping, so we skip it and mine in light mode (256 MiB).
+// Light and fast modes compute identical hashes, so this is purely a
+// performance/stability choice and never affects consensus.
+constexpr uint64_t kFastModeMinMiB = 3072;
+
+// Physically available RAM in MiB, or 0 when it cannot be determined.
+uint64_t AvailableMemoryMiB()
+{
+#ifdef WIN32
+    MEMORYSTATUSEX st;
+    st.dwLength = sizeof(st);
+    if (GlobalMemoryStatusEx(&st)) {
+        return static_cast<uint64_t>(st.ullAvailPhys) / (1024ULL * 1024ULL);
+    }
+    return 0;
+#elif defined(__APPLE__)
+    uint64_t total = 0;
+    size_t len = sizeof(total);
+    if (sysctlbyname("hw.memsize", &total, &len, nullptr, 0) == 0) {
+        return total / (1024ULL * 1024ULL);
+    }
+    return 0;
+#else
+    std::ifstream meminfo("/proc/meminfo");
+    std::string field, unit;
+    uint64_t value = 0;
+    while (meminfo >> field >> value >> unit) {
+        if (field == "MemAvailable:") return value / 1024ULL; // kB -> MiB
+    }
+    return 0;
+#endif
+}
 
 // Per-thread RandomX state. RandomX VMs are not safe to share between threads,
 // so each thread keeps its own cache + VM. The cache is rebuilt only when the
@@ -84,6 +129,15 @@ bool RandomXInitMiningDataset(const uint256& key, unsigned init_threads)
 {
     std::lock_guard<std::mutex> lock(g_mining.mtx);
     if (g_mining.ready && g_mining.key == key) return true;
+
+    // Don't even attempt the 2 GiB dataset when RAM is short - it would thrash
+    // swap and stall mining. Light mode (identical hashes) is used instead.
+    const uint64_t avail = AvailableMemoryMiB();
+    if (avail > 0 && avail < kFastModeMinMiB) {
+        LogPrintf("RandomX mining: only %d MiB RAM available, using light mode "
+                  "(fast mode needs ~%d MiB)\n", avail, kFastModeMinMiB);
+        return false;
+    }
 
     const randomx_flags base = randomx_get_flags();
     const randomx_flags vm_flags = base | RANDOMX_FLAG_FULL_MEM;
