@@ -95,6 +95,17 @@ jobs:
           cmake --build build -j"$(sysctl -n hw.ncpu)" --target bitcoind bitcoin-cli bitcoin-qt bz-genesis-miner
 
       - name: Package
+        env:
+          # Optional — set these repo secrets to ship a fully notarized wallet
+          # that opens with a double-click (no "damaged"/"unidentified developer"
+          # prompt). If unset, the app is ad-hoc signed: it still runs (no longer
+          # "damaged"), but first launch needs right-click -> Open once.
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          AC_API_KEY_ID: ${{ secrets.AC_API_KEY_ID }}
+          AC_API_ISSUER_ID: ${{ secrets.AC_API_ISSUER_ID }}
+          AC_API_KEY_P8: ${{ secrets.AC_API_KEY_P8 }}
         run: |
           TAG="${GITHUB_REF_NAME}"
           PKG="blockzero-${TAG}-macos-${{ matrix.arch }}"
@@ -156,6 +167,59 @@ jobs:
 
           # Bundle the Qt frameworks so the .app runs without Homebrew installed.
           "$(brew --prefix qt@6)/bin/macdeployqt" "${APP}"
+
+          # --- Code-sign (CRITICAL) ---------------------------------------------
+          # macdeployqt rewrites the binary's load paths (install_name_tool), which
+          # INVALIDATES the build-time signature. On Apple Silicon an arm64 app with
+          # a broken/absent signature is killed by the kernel and Gatekeeper reports
+          # "is damaged and can't be opened. Move it to the Bin." We must re-sign the
+          # whole bundle here so it actually runs.
+          ENT="$(mktemp).plist"
+          cat > "$ENT" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>com.apple.security.cs.disable-library-validation</key><true/>
+          </dict></plist>
+          PLIST
+
+          if [ -n "${MACOS_CERT_P12:-}" ] && [ -n "${MACOS_SIGN_IDENTITY:-}" ]; then
+            # Developer ID signing -> enables notarization (double-click "just works").
+            KEYCHAIN="$RUNNER_TEMP/bloz-sign.keychain-db"
+            KPW="$(openssl rand -base64 24)"
+            security create-keychain -p "$KPW" "$KEYCHAIN"
+            security set-keychain-settings -lut 3600 "$KEYCHAIN"
+            security unlock-keychain -p "$KPW" "$KEYCHAIN"
+            echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+            security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple: -s -k "$KPW" "$KEYCHAIN" >/dev/null
+            security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | sed s/\"//g)
+            SIGN_ID="$MACOS_SIGN_IDENTITY"
+            HARDENED="--options runtime --timestamp"
+          else
+            echo "::warning::No MACOS_CERT_P12/MACOS_SIGN_IDENTITY secrets — using ad-hoc signature. App will run (no longer 'damaged'), but first launch still needs right-click -> Open. Add Developer ID + App Store Connect secrets to ship a notarized, double-click build."
+            SIGN_ID="-"
+            HARDENED=""
+          fi
+
+          # Sign inside-out: nested dylibs/frameworks first, then the app bundle.
+          find "${APP}/Contents/Frameworks" -type f \( -name '*.dylib' -o -perm -u+x \) -print0 2>/dev/null \
+            | while IFS= read -r -d '' f; do
+                codesign --force $HARDENED --entitlements "$ENT" --sign "$SIGN_ID" "$f" || true
+              done
+          codesign --force --deep $HARDENED --entitlements "$ENT" --sign "$SIGN_ID" "${APP}/Contents/MacOS/Block Zero"
+          codesign --force --deep $HARDENED --entitlements "$ENT" --sign "$SIGN_ID" "${APP}"
+          codesign --verify --deep --strict --verbose=2 "${APP}"
+
+          # --- Notarize + staple (only with Developer ID + API key secrets) ------
+          if [ "$SIGN_ID" != "-" ] && [ -n "${AC_API_KEY_P8:-}" ] && [ -n "${AC_API_KEY_ID:-}" ] && [ -n "${AC_API_ISSUER_ID:-}" ]; then
+            echo "$AC_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/ac_key.p8"
+            ditto -c -k --keepParent "${APP}" "$RUNNER_TEMP/notarize.zip"
+            xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
+              --key "$RUNNER_TEMP/ac_key.p8" --key-id "$AC_API_KEY_ID" --issuer "$AC_API_ISSUER_ID" --wait
+            xcrun stapler staple "${APP}"
+            echo "Notarized and stapled — wallet will open with a double-click."
+          fi
 
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
