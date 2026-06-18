@@ -23,7 +23,12 @@ void EnsureBlockZeroDefaultConfigFile(const ArgsManager& args, const fs::path& d
     if (args.IsArgSet("-datadir")) return;
     if (config_path.empty()) return;
     const fs::path expected_config = datadir_path / BITCOIN_CONF_FILENAME;
-    if (!fs::equivalent(config_path, expected_config)) return;
+    // Only auto-create when the effective config path is the default
+    // datadir/bitcoin.conf. Compare lexically rather than with fs::equivalent():
+    // equivalent() requires both files to already exist and otherwise throws
+    // (on macOS: "filesystem error: in equivalent: Operation not supported"),
+    // which is exactly the first-run case this function needs to handle.
+    if (config_path.lexically_normal() != expected_config.lexically_normal()) return;
     if (args.GetChainType() != ChainType::MAIN) return;
     if (fs::exists(expected_config)) return;
 
