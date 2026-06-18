@@ -134,8 +134,8 @@ bool RandomXInitMiningDataset(const uint256& key, unsigned init_threads)
     // swap and stall mining. Light mode (identical hashes) is used instead.
     const uint64_t avail = AvailableMemoryMiB();
     if (avail > 0 && avail < kFastModeMinMiB) {
-        LogPrintf("RandomX mining: only %d MiB RAM available, using light mode "
-                  "(fast mode needs ~%d MiB)\n", avail, kFastModeMinMiB);
+        LogInfo("RandomX mining: only %d MiB RAM available, using light mode "
+                "(fast mode needs ~%d MiB)\n", avail, kFastModeMinMiB);
         return false;
     }
 
