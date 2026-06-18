@@ -53,7 +53,10 @@ jobs:
           TAG="${GITHUB_REF_NAME}"
           PKG="blockzero-${TAG}-linux-${{ matrix.arch }}"
           mkdir -p "${PKG}/bin"
-          cp build/bin/bitcoind build/bin/bitcoin-cli build/bin/bitcoin-qt build/bin/bz-genesis-miner "${PKG}/bin/"
+          cp build/bin/bitcoind build/bin/bitcoin-cli build/bin/bz-genesis-miner "${PKG}/bin/"
+          # GUI wallet ships as "block-zero" (terminal-friendly; same Block Zero
+          # branding compiled in). bitcoind/bitcoin-cli keep their names for scripts.
+          cp build/bin/bitcoin-qt "${PKG}/bin/block-zero"
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
           tar -czf "${PKG}.tar.gz" "${PKG}"
@@ -95,14 +98,65 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME}"
           PKG="blockzero-${TAG}-macos-${{ matrix.arch }}"
+          # CFBundleShortVersionString must be numeric X.Y.Z (strip leading v / -rcNN).
+          VER="$(printf '%s' "${TAG#v}" | sed -E 's/-.*$//')"
+          [ -n "$VER" ] || VER="1.0.0"
           mkdir -p "${PKG}/bin"
           cp build/bin/bitcoind build/bin/bitcoin-cli build/bin/bz-genesis-miner "${PKG}/bin/"
-          # bitcoin-qt is built as a .app bundle on macOS; fall back to the raw binary.
-          if [ -d build/bin/bitcoin-qt.app ]; then
-            cp -R build/bin/bitcoin-qt.app "${PKG}/"
-          else
-            cp build/bin/bitcoin-qt "${PKG}/bin/"
-          fi
+
+          # --- Build a branded, self-contained "Block Zero.app" (parity with the
+          #     Windows bitcoin-qt.exe: same GUI, Block Zero icon + identity). ---
+          APP="${PKG}/Block Zero.app"
+          mkdir -p "${APP}/Contents/MacOS" "${APP}/Contents/Resources/Base.lproj"
+          cp build/bin/bitcoin-qt "${APP}/Contents/MacOS/Block Zero"
+
+          # App icon (.icns) from the Block Zero PNG using native macOS tools.
+          ICONSET="$(mktemp -d)/bloz.iconset"
+          mkdir -p "$ICONSET"
+          SRC_PNG="src/qt/res/icons/bitcoin.png"   # 1024px Block Zero logo
+          for s in 16 32 64 128 256 512; do
+            sips -z $s $s "$SRC_PNG" --out "$ICONSET/icon_${s}x${s}.png" >/dev/null
+            d=$((s * 2))
+            sips -z $d $d "$SRC_PNG" --out "$ICONSET/icon_${s}x${s}@2x.png" >/dev/null
+          done
+          iconutil -c icns "$ICONSET" -o "${APP}/Contents/Resources/bloz.icns"
+
+          printf 'APPL????' > "${APP}/Contents/PkgInfo"
+          printf '{ CFBundleDisplayName = "Block Zero"; CFBundleName = "Block Zero"; }\n' \
+            > "${APP}/Contents/Resources/Base.lproj/InfoPlist.strings"
+
+          cat > "${APP}/Contents/Info.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>LSMinimumSystemVersion</key><string>14</string>
+            <key>LSArchitecturePriority</key><array><string>arm64</string></array>
+            <key>CFBundleIconFile</key><string>bloz.icns</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
+            <key>CFBundleShortVersionString</key><string>${VER}</string>
+            <key>CFBundleVersion</key><string>${VER}</string>
+            <key>CFBundleSignature</key><string>????</string>
+            <key>CFBundleExecutable</key><string>Block Zero</string>
+            <key>CFBundleName</key><string>Block Zero</string>
+            <key>LSHasLocalizedDisplayName</key><true/>
+            <key>CFBundleIdentifier</key><string>org.blockzero.BlockZero</string>
+            <key>CFBundleURLTypes</key><array><dict>
+              <key>CFBundleTypeRole</key><string>Editor</string>
+              <key>CFBundleURLName</key><string>org.blockzero.BlozPayment</string>
+              <key>CFBundleURLSchemes</key><array><string>bloz</string></array>
+            </dict></array>
+            <key>NSPrincipalClass</key><string>NSApplication</string>
+            <key>NSHighResolutionCapable</key><true/>
+            <key>LSApplicationCategoryType</key><string>public.app-category.finance</string>
+          </dict>
+          </plist>
+          EOF
+
+          # Bundle the Qt frameworks so the .app runs without Homebrew installed.
+          "$(brew --prefix qt@6)/bin/macdeployqt" "${APP}"
+
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
           tar -czf "${PKG}.tar.gz" "${PKG}"
@@ -179,11 +233,15 @@ jobs:
           PKG="blockzero-${TAG}-windows-x64"
           QT_BIN="qt/${QT_VERSION}/${QT_PATH}/bin"
           mkdir -p "${PKG}/bin" "${PKG}/bin/platforms"
-          cp build/bin/Release/bitcoind.exe build/bin/Release/bitcoin-cli.exe build/bin/Release/bitcoin-qt.exe build/bin/Release/bz-genesis-miner.exe "${PKG}/bin/"
+          cp build/bin/Release/bitcoind.exe build/bin/Release/bitcoin-cli.exe build/bin/Release/bz-genesis-miner.exe "${PKG}/bin/"
+          # GUI wallet ships under the Block Zero name (parity with macOS "Block Zero.app").
+          # The icon and "Block Zero" product info are compiled into the exe, so the
+          # file name is purely cosmetic. bitcoind/bitcoin-cli keep their names for scripts.
+          cp "build/bin/Release/bitcoin-qt.exe" "${PKG}/bin/Block Zero.exe"
           cp "${QT_BIN}/Qt6Core.dll" "${QT_BIN}/Qt6Gui.dll" "${QT_BIN}/Qt6Widgets.dll" "${QT_BIN}/Qt6Network.dll" "${QT_BIN}/Qt6Svg.dll" "${PKG}/bin/"
           cp build/vcpkg_installed/x64-windows/bin/*.dll "${PKG}/bin/" 2>/dev/null || true
           cp "qt/${QT_VERSION}/${QT_PATH}/plugins/platforms/qwindows.dll" "${PKG}/bin/platforms/"
-          # Bundle MSVC runtime so users without VC++ Redistributable can run bitcoin-qt.exe.
+          # Bundle MSVC runtime so users without VC++ Redistributable can run the wallet.
           MSVC_CRIT=$(find "/c/Program Files/Microsoft Visual Studio" -path "*/Redist/MSVC/*/x64/Microsoft.VC*.CRT/msvcp140.dll" 2>/dev/null | sort | tail -1)
           if [ -z "${MSVC_CRIT}" ]; then
             echo "MSVC CRT redist not found on runner" >&2
@@ -194,7 +252,7 @@ jobs:
           echo "Bundled MSVC runtime from ${MSVC_DIR}"
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
-          printf '%s\n' 'Block Zero Windows x64' '' 'Requires no separate VC++ install when using this zip (runtime DLLs are in bin/).' '' 'Start wallet: bin\bitcoin-qt.exe' > "${PKG}/README.txt"
+          printf '%s\n' 'Block Zero Windows x64' '' 'Requires no separate VC++ install when using this zip (runtime DLLs are in bin/).' '' 'Start wallet: bin\Block Zero.exe' > "${PKG}/README.txt"
           powershell -Command "Compress-Archive -Path '${PKG}' -DestinationPath '${PKG}.zip' -Force"
           sha256sum "${PKG}.zip" > "${PKG}.zip.sha256"
 

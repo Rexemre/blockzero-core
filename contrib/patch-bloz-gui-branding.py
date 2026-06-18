@@ -119,6 +119,32 @@ def patch_qt_res() -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
+def patch_macos_plist() -> None:
+    path = ROOT / "share/qt/Info.plist.in"
+    text = path.read_text(encoding="utf-8")
+    replacements = [
+        ("<string>x86_64</string>", "<string>arm64</string>"),
+        ("<string>bitcoin.icns</string>", "<string>bloz.icns</string>"),
+        ("<string>Bitcoin-Qt</string>", "<string>Block Zero</string>"),
+        ("org.bitcoinfoundation.Bitcoin-Qt", "org.blockzero.BlockZero"),
+        ("org.bitcoin.BitcoinPayment", "org.blockzero.BlozPayment"),
+        ("<string>bitcoin</string>", "<string>bloz</string>"),
+    ]
+    for old, new in replacements:
+        text = text.replace(old, new)
+    path.write_text(text, encoding="utf-8", newline="\n")
+
+
+def patch_macos_deploy() -> None:
+    path = ROOT / "cmake/module/Maintenance.cmake"
+    text = path.read_text(encoding="utf-8")
+    text = text.replace('set(macos_app "Bitcoin-Qt.app")', 'set(macos_app "Block Zero.app")')
+    text = text.replace("res/icons/bitcoin.icns", "res/icons/bloz.icns")
+    text = text.replace("Resources/bitcoin.icns", "Resources/bloz.icns")
+    text = text.replace("MacOS/Bitcoin-Qt", 'MacOS/Block Zero')
+    path.write_text(text, encoding="utf-8", newline="\n")
+
+
 def patch_german_locale() -> None:
     de_rules = [
         ("Bitcoin Core", "Block Zero"),
@@ -144,6 +170,8 @@ def main() -> None:
     patch_splash()
     patch_utilitydialog()
     patch_qt_res()
+    patch_macos_plist()
+    patch_macos_deploy()
     changed = 0
     for path in UI_FILES + CPP_FILES + LOCALE_FILES:
         if patch_file(path):

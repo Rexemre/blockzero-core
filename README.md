@@ -30,7 +30,9 @@ Modern **Bitcoin Core v31**. **RandomX** runs on ordinary processors — laptop,
 
 ## Start in 3 steps
 
-1. **Wallet (Windows)** — download **[v1.0.0-rc24](https://github.com/Rexemre/blockzero-core/releases/tag/v1.0.0-rc24)** (`blockzero-v1.0.0-rc24-windows-x64.zip`), unzip, run `bin\bitcoin-qt.exe`. MSVC runtime is included — no extra install needed.
+1. **Wallet** — download the [latest release](https://github.com/Rexemre/blockzero-core/releases/tag/v1.0.0-rc24).
+   - **Windows:** `blockzero-*-windows-x64.zip` → unzip → run `bin\Block Zero.exe` (MSVC runtime included).
+   - **macOS (Apple Silicon):** `blockzero-*-macos-arm64.tar.gz` → extract → open **`Block Zero.app`** (right-click → Open the first time).
 2. **Mine on the official pool** — get a `bz1…` address from the wallet, then:
    ```bash
    git clone https://github.com/Rexemre/blockzero-ops.git
@@ -146,7 +148,7 @@ cd blockzero-ops\scripts\mainnet
 
 **Public seed:** `217.160.46.61:8210` · **Block explorer:** https://explorer.bloz.org
 
-**GUI wallet (`bitcoin-qt`):** download from [Releases](https://github.com/Rexemre/blockzero-core/releases). Latest Windows build: **v1.0.0-rc24** (bundled MSVC runtime). v1.0.0-rc10+ embeds the seed as a fixed peer; on older builds add `addnode=217.160.46.61:8210` to `%LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf` — see [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet).
+**GUI wallet (`bitcoin-qt`):** download from [Releases](https://github.com/Rexemre/blockzero-core/releases) — **Windows** (`windows-x64.zip`, bundled MSVC runtime) and **macOS Apple Silicon** (`macos-arm64.tar.gz`, ships **`Block Zero.app`**). v1.0.0-rc10+ embeds the seed as a fixed peer; on older builds add `addnode=217.160.46.61:8210` to `%LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf` (Windows) or `~/.blockzero-mainnet/bitcoin.conf` (macOS) — see [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet).
 
 Testnet (TBLOZ) remains available for development — see [blockzero-docs/quickstart-mining.md](https://github.com/Rexemre/blockzero-docs/blob/main/quickstart-mining.md#testnet-optional).
 

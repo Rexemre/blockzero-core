@@ -30,6 +30,18 @@ def make_app_icon_png() -> None:
     print(f"app icon png: {out}")
 
 
+def make_app_icon_icns() -> None:
+    # macOS app bundle icon. The release CI regenerates this with native
+    # sips/iconutil; this provides a committed fallback for the cmake deploy path.
+    src = Image.open(APP_ICON)
+    out = ICONS / "bloz.icns"
+    try:
+        resize_square(src, 1024).save(out, format="ICNS")
+        print(f"app icon icns: {out}")
+    except (OSError, ValueError) as exc:
+        print(f"skip icns (Pillow cannot write ICNS here: {exc}); CI builds it via iconutil")
+
+
 def make_app_icon_ico() -> None:
     src = Image.open(APP_ICON)
     sizes = [16, 32, 48, 256]
@@ -62,6 +74,7 @@ def main() -> None:
             raise SystemExit(f"missing brand asset: {path}")
     make_app_icon_png()
     make_app_icon_ico()
+    make_app_icon_icns()
     make_splash_logo()
     print("done")
 
