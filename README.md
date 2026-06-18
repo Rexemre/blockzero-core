@@ -30,7 +30,7 @@ Modern **Bitcoin Core v31**. **RandomX** runs on ordinary processors — laptop,
 
 ## Start in 3 steps
 
-1. **Wallet** — download the [latest release](https://github.com/Rexemre/blockzero-core/releases/tag/v1.0.0-rc24).
+1. **Wallet** — download the [latest release](https://github.com/Rexemre/blockzero-core/releases/tag/v1.0.0-rc28).
    - **Windows:** `blockzero-*-windows-x64.zip` → unzip → run `bin\Block Zero.exe` (MSVC runtime included).
    - **macOS (Apple Silicon):** `blockzero-*-macos-arm64.tar.gz` → extract → open **`Block Zero.app`** (right-click → Open the first time).
 2. **Mine on the official pool** — get a `bz1…` address from the wallet, then:
