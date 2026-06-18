@@ -20,6 +20,7 @@
 #include <streams.h>
 #include <uint256.h>
 #include <util/strencodings.h>
+#include <util/translation.h>
 
 #include <atomic>
 #include <chrono>
@@ -30,6 +31,11 @@
 #include <string>
 #include <thread>
 #include <vector>
+
+// This tool links libbitcoin_clientversion (CopyrightHolders), which references
+// G_TRANSLATION_FUN. Define it here like every other executable (bitcoind,
+// bitcoin-cli, ...); the genesis miner does not translate any strings.
+const TranslateFn G_TRANSLATION_FUN{nullptr};
 
 namespace {
 
