@@ -1,13 +1,18 @@
-# Block Zero mainnet — copy to bitcoin.conf in your datadir
-# Windows: %LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf
-# Linux/macOS: ~/.blockzero-mainnet/bitcoin.conf
+# Block Zero mainnet config — OPTIONAL.
+# Newer builds (rc10+) have a built-in seed peer, so you usually do NOT need
+# this file at all. Copy it to bitcoin.conf in your datadir only to customize.
+#
+# Default datadir (used automatically when you don't pass -datadir):
+#   Windows: %LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf
+#   Linux:   ~/.blockzero-mainnet/bitcoin.conf
+#   macOS:   ~/Library/Application Support/BlockZeroMainnet/bitcoin.conf
+#
+# Note: do NOT add txindex if you run the GUI in "prune" mode — they conflict.
 
 server=1
-txindex=1
 
 [main]
 listen=1
 rpcbind=127.0.0.1
 rpcallowip=127.0.0.1
-rpcport=8332
 addnode=217.160.46.61:8210
