@@ -321,7 +321,45 @@ jobs:
           echo "Bundled MSVC runtime from ${MSVC_DIR}"
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
-          printf '%s\n' 'Block Zero Windows x64' '' 'Requires no separate VC++ install when using this zip (runtime DLLs are in bin/).' '' 'Start wallet: bin\Block Zero.exe' > "${PKG}/README.txt"
+          # Loud "extract first" readme + a foolproof launcher. The #1 Windows
+          # support issue is users running Block Zero.exe straight from inside the
+          # zip: Windows extracts only the .exe to a temp dir without its Qt DLLs,
+          # so it dies with "Qt6Widgets.dll not found" (a modal System Error that
+          # can need a reboot). The launcher only works once extracted.
+          cat > "${PKG}/READ ME FIRST.txt" <<'TXT'
+          ============================================================
+            BLOCK ZERO WALLET (Windows) - READ THIS FIRST
+          ============================================================
+
+          1) EXTRACT this zip first.  Right-click the .zip -> "Extract All...".
+             Do NOT run the wallet from inside the zip - Windows launches the
+             .exe without its Qt DLLs and you get errors such as
+             "Qt6Widgets.dll was not found" (a System Error you may have to
+             reboot to clear).
+
+          2) After extracting, double-click  "Start Block Zero.bat"
+             (or open the  bin  folder and run  "Block Zero.exe").
+
+          No separate VC++ install needed - all runtime DLLs are in bin\.
+
+          Mining guide:
+          https://github.com/Rexemre/blockzero-docs/blob/main/quickstart-mining.md
+          TXT
+          cat > "${PKG}/Start Block Zero.bat" <<'BAT'
+          @echo off
+          cd /d "%~dp0"
+          if not exist "bin\Block Zero.exe" (
+            echo.
+            echo   Block Zero wallet files were not found next to this launcher.
+            echo   Please EXTRACT the whole zip first, then run this file again.
+            echo.
+            pause
+            exit /b 1
+          )
+          start "" "%~dp0bin\Block Zero.exe"
+          BAT
+          # Batch files want CRLF line endings.
+          sed -i 's/$/\r/' "${PKG}/Start Block Zero.bat"
           powershell -Command "Compress-Archive -Path '${PKG}' -DestinationPath '${PKG}.zip' -Force"
           sha256sum "${PKG}.zip" > "${PKG}.zip.sha256"
 
