@@ -15,6 +15,8 @@
 #include <algorithm>
 #include <exception>
 #include <optional>
+#include <sstream>
+#include <string>
 
 namespace {
 //! Create a mainnet bitcoin.conf on first run so the GUI works without manual setup.
@@ -54,6 +56,57 @@ void EnsureBlockZeroDefaultConfigFile(const ArgsManager& args, const fs::path& d
         LogWarning("Could not write default config to %s", fs::PathToString(expected_config));
     }
 }
+
+//! Comment out a stale `txindex` setting in the default desktop mainnet config.
+//! Older Block Zero builds auto-created bitcoin.conf with `txindex=1`. Combined
+//! with the GUI "limit block chain storage" (prune) choice this aborts startup
+//! with "Prune mode is incompatible with -txindex" — so an updated wallet still
+//! fails for users who kept their old datadir. Neutralize it automatically so
+//! non-technical users never have to hand-edit a config file.
+//!
+//! Guarded to the *default* datadir/bitcoin.conf on mainnet only: it never
+//! touches server/explorer configs (those pass -datadir and legitimately use
+//! txindex with pruning disabled).
+void SanitizeBlockZeroStaleTxindex(const ArgsManager& args, const fs::path& datadir_path, const fs::path& config_path)
+{
+    if (args.IsArgSet("-datadir")) return;
+    if (config_path.empty()) return;
+    const fs::path expected_config = datadir_path / BITCOIN_CONF_FILENAME;
+    if (config_path.lexically_normal() != expected_config.lexically_normal()) return;
+    if (args.GetChainType() != ChainType::MAIN) return;
+    if (!fs::exists(expected_config)) return;
+
+    const auto [read_ok, contents] = ReadBinaryFile(expected_config);
+    if (!read_ok) return;
+
+    std::istringstream stream{contents};
+    std::string line;
+    std::string out;
+    bool changed = false;
+    while (std::getline(stream, line)) {
+        if (!line.empty() && line.back() == '\r') line.pop_back(); // normalize CRLF
+        const size_t first = line.find_first_not_of(" \t");
+        if (first != std::string::npos && line.compare(first, 7, "txindex") == 0) {
+            // Active (uncommented) txindex line: `txindex` optionally followed by `=value`.
+            const char after = (first + 7 < line.size()) ? line[first + 7] : '\0';
+            if (after == '\0' || after == '=' || after == ' ' || after == '\t') {
+                out += "# " + line + "    # auto-disabled: incompatible with prune (Block Zero)\n";
+                changed = true;
+                continue;
+            }
+        }
+        out += line;
+        out += "\n";
+    }
+
+    if (changed) {
+        if (WriteBinaryFile(expected_config, out)) {
+            LogInfo("Disabled stale txindex in %s (incompatible with prune)", fs::PathToString(expected_config));
+        } else {
+            LogWarning("Could not rewrite %s to disable stale txindex", fs::PathToString(expected_config));
+        }
+    }
+}
 } // namespace
 
 namespace common {
@@ -77,6 +130,7 @@ std::optional<ConfigError> InitConfig(ArgsManager& args, SettingsAbortFn setting
         const fs::path orig_config_path{AbsPathForConfigVal(args, args.GetPathArg("-conf", BITCOIN_CONF_FILENAME), /*net_specific=*/false)};
 
         EnsureBlockZeroDefaultConfigFile(args, orig_datadir_path, orig_config_path);
+        SanitizeBlockZeroStaleTxindex(args, orig_datadir_path, orig_config_path);
 
         std::string error;
         if (!args.ReadConfigFiles(error, true)) {
