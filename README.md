@@ -30,19 +30,9 @@ Modern **Bitcoin Core v31**. **RandomX** runs on ordinary processors — laptop,
 
 ## Start in 3 steps
 
-1. **Wallet** — download the [latest release](https://github.com/Rexemre/blockzero-core/releases/tag/v1.0.0-rc28).
-   - **Windows:** `blockzero-*-windows-x64.zip` → unzip → run `bin\Block Zero.exe` (MSVC runtime included).
-   - **macOS (Apple Silicon):** `blockzero-*-macos-arm64.tar.gz` → extract → open **`Block Zero.app`** (right-click → Open the first time).
-2. **Mine on the official pool** — get a `bz1…` address from the wallet, then:
-   ```bash
-   git clone https://github.com/Rexemre/blockzero-ops.git
-   cd blockzero-ops/scripts/mainnet
-   ./mine-pool.sh bz1YOURADDRESS          # Linux / macOS
-   ```
-   Windows: `.\install-windows.ps1` then `.\mine-mainnet.ps1 -Pool` — see [blockzero-ops](https://github.com/Rexemre/blockzero-ops).
-3. **Stuck or curious?** — **[Join Discord](https://discord.gg/FbJzrwAU2W)** (fastest help). Check your stats at [pool.bloz.org](https://pool.bloz.org) with your `bz1` address.
-
-*You should see `New job: … - mining.` and hashrate > 0 within a minute. Pool miner: [pool-miner-v0.6.9](https://github.com/Rexemre/blockzero-ops/releases/tag/pool-miner-v0.6.9).*
+1. **Wallet** — [How to Use the Wallet](https://github.com/Rexemre/blockzero-docs/blob/main/how-to-use-wallet.md)
+2. **Mine** — [How to Mine BLOZ](https://github.com/Rexemre/blockzero-docs/blob/main/how-to-mine.md)
+3. **Help** — [Discord](https://discord.gg/FbJzrwAU2W) · [FAQ](https://github.com/Rexemre/blockzero-docs/blob/main/faq.md)
 
 ---
 
@@ -148,7 +138,7 @@ cd blockzero-ops\scripts\mainnet
 
 **Public seed:** `217.160.46.61:8210` · **Block explorer:** https://explorer.bloz.org
 
-**GUI wallet (`bitcoin-qt`):** download from [Releases](https://github.com/Rexemre/blockzero-core/releases) — **Windows** (`windows-x64.zip`, bundled MSVC runtime) and **macOS Apple Silicon** (`macos-arm64.tar.gz`, ships **`Block Zero.app`**). v1.0.0-rc10+ embeds the seed as a fixed peer; on older builds add `addnode=217.160.46.61:8210` to `%LOCALAPPDATA%\BlockZeroMainnet\bitcoin.conf` (Windows) or `~/.blockzero-mainnet/bitcoin.conf` (macOS) — see [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet).
+**GUI wallet (`bitcoin-qt`):** download from [Releases](https://github.com/Rexemre/blockzero-core/releases) — see **[How to Use the Wallet](https://github.com/Rexemre/blockzero-docs/blob/main/how-to-use-wallet.md)**. **Windows** (`windows-x64.zip`, extract first) and **macOS Apple Silicon** (`macos-arm64.tar.gz` or `install-macos.sh`). v1.0.0-rc10+ embeds the seed as a fixed peer; on older builds add `addnode=217.160.46.61:8210` to `bitcoin.conf` — see [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet).
 
 Testnet (TBLOZ) remains available for development — see [blockzero-docs/quickstart-mining.md](https://github.com/Rexemre/blockzero-docs/blob/main/quickstart-mining.md#testnet-optional).
 
@@ -174,7 +164,8 @@ See [doc/build-unix.md](doc/build-unix.md) and [doc/build-windows-msvc.md](doc/b
 | **blockzero-core** (here) | Node, consensus, RandomX proof-of-work |
 | [blockzero-docs](https://github.com/Rexemre/blockzero-docs) | Guides, specs, status |
 | [blockzero-ops](https://github.com/Rexemre/blockzero-ops) | Mining scripts, seed node, explorer |
-| [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet) | Wallet guides & downloads |
+| [blockzero-docs](https://github.com/Rexemre/blockzero-docs) | Documentation — start with [how-to-use-wallet.md](https://github.com/Rexemre/blockzero-docs/blob/main/how-to-use-wallet.md) |
+| [blockzero-wallet](https://github.com/Rexemre/blockzero-wallet) | Wallet doc hub |
 | [blockzero-bridge](https://github.com/Rexemre/blockzero-bridge) | wBLOZ bridge (BSC) |
 
 ---
