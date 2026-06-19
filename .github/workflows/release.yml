@@ -296,15 +296,20 @@ jobs:
           TAG="${GITHUB_REF_NAME}"
           PKG="blockzero-${TAG}-windows-x64"
           QT_BIN="qt/${QT_VERSION}/${QT_PATH}/bin"
-          mkdir -p "${PKG}/bin" "${PKG}/bin/platforms"
+          mkdir -p "${PKG}/bin"
           cp build/bin/Release/bitcoind.exe build/bin/Release/bitcoin-cli.exe build/bin/Release/bz-genesis-miner.exe "${PKG}/bin/"
           # GUI wallet ships under the Block Zero name (parity with macOS "Block Zero.app").
           # The icon and "Block Zero" product info are compiled into the exe, so the
           # file name is purely cosmetic. bitcoind/bitcoin-cli keep their names for scripts.
           cp "build/bin/Release/bitcoin-qt.exe" "${PKG}/bin/Block Zero.exe"
-          cp "${QT_BIN}/Qt6Core.dll" "${QT_BIN}/Qt6Gui.dll" "${QT_BIN}/Qt6Widgets.dll" "${QT_BIN}/Qt6Network.dll" "${QT_BIN}/Qt6Svg.dll" "${PKG}/bin/"
+          # Deploy the COMPLETE Qt runtime (all required Qt6*.dll + the platforms/
+          # styles/imageformats plugins) with windeployqt. The previous hand-picked
+          # DLL list missed dependencies and produced "Qt6Gui.dll not found" /
+          # blank-launch errors on user machines.
+          "${QT_BIN}/windeployqt.exe" --release --no-translations --compiler-runtime \
+            --dir "${PKG}/bin" "${PKG}/bin/Block Zero.exe"
+          # Non-Qt runtime libraries from vcpkg (libevent, sqlite3, ...).
           cp build/vcpkg_installed/x64-windows/bin/*.dll "${PKG}/bin/" 2>/dev/null || true
-          cp "qt/${QT_VERSION}/${QT_PATH}/plugins/platforms/qwindows.dll" "${PKG}/bin/platforms/"
           # Bundle MSVC runtime so users without VC++ Redistributable can run the wallet.
           MSVC_CRIT=$(find "/c/Program Files/Microsoft Visual Studio" -path "*/Redist/MSVC/*/x64/Microsoft.VC*.CRT/msvcp140.dll" 2>/dev/null | sort | tail -1)
           if [ -z "${MSVC_CRIT}" ]; then
