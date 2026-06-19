@@ -33,10 +33,14 @@ void EnsureBlockZeroDefaultConfigFile(const ArgsManager& args, const fs::path& d
     if (fs::exists(expected_config)) return;
 
     fs::create_directories(datadir_path);
+    // Note: intentionally no txindex here. The GUI first-run dialog lets users
+    // pick "limit block chain storage" (prune), and txindex=1 is incompatible
+    // with prune ("Prune mode is incompatible with -txindex"), which would crash
+    // the wallet on launch. A desktop wallet does not need txindex; the server /
+    // explorer configs set it separately where pruning is off.
     const std::string contents =
         "# Block Zero mainnet (auto-created)\n"
         "server=1\n"
-        "txindex=1\n"
         "\n"
         "[main]\n"
         "listen=1\n"
