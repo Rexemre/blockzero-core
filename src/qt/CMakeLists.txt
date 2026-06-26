@@ -173,6 +173,12 @@ if(ENABLE_WALLET)
       createwalletdialog.h
       editaddressdialog.cpp
       editaddressdialog.h
+      minercontroller.cpp
+      minercontroller.h
+      minerinstaller.cpp
+      minerinstaller.h
+      miningpage.cpp
+      miningpage.h
       openuridialog.cpp
       openuridialog.h
       overviewpage.cpp
