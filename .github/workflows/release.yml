@@ -376,6 +376,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
           $h = (Get-FileHash "$PKG-setup.exe" -Algorithm SHA256).Hash.ToLower()
           "$h  $PKG-setup.exe" | Out-File "$PKG-setup.exe.sha256" -Encoding ascii -NoNewline
+          # Version-less alias so websites can hard-link a stable "always latest"
+          # URL: releases/latest/download/blockzero-windows-x64-setup.exe
+          Copy-Item "$PKG-setup.exe" "blockzero-windows-x64-setup.exe" -Force
+          $h2 = (Get-FileHash "blockzero-windows-x64-setup.exe" -Algorithm SHA256).Hash.ToLower()
+          "$h2  blockzero-windows-x64-setup.exe" | Out-File "blockzero-windows-x64-setup.exe.sha256" -Encoding ascii -NoNewline
 
       - uses: softprops/action-gh-release@v2
         with:
@@ -384,6 +389,8 @@ jobs:
             blockzero-*-windows-x64.zip.sha256
             blockzero-*-windows-x64-setup.exe
             blockzero-*-windows-x64-setup.exe.sha256
+            blockzero-windows-x64-setup.exe
+            blockzero-windows-x64-setup.exe.sha256
 
   # Fast CLI-only Windows build: no Qt/GUI, so vcpkg does NOT compile Qt from
   # source (which makes the full GUI job take ~90 min). Publishes the mining
