@@ -363,11 +363,27 @@ jobs:
           powershell -Command "Compress-Archive -Path '${PKG}' -DestinationPath '${PKG}.zip' -Force"
           sha256sum "${PKG}.zip" > "${PKG}.zip.sha256"
 
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build one-click installer
+        run: |
+          $TAG = "${env:GITHUB_REF_NAME}"
+          $PKG = "blockzero-$TAG-windows-x64"
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { $iscc = "$env:ProgramFiles\Inno Setup 6\ISCC.exe" }
+          & $iscc "/DSourceDir=$PWD\$PKG\bin" "/DAppVersion=$TAG" "/F$PKG-setup" "/O$PWD" "contrib\windows\block-zero.iss"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
+          $h = (Get-FileHash "$PKG-setup.exe" -Algorithm SHA256).Hash.ToLower()
+          "$h  $PKG-setup.exe" | Out-File "$PKG-setup.exe.sha256" -Encoding ascii -NoNewline
+
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             blockzero-*-windows-x64.zip
             blockzero-*-windows-x64.zip.sha256
+            blockzero-*-windows-x64-setup.exe
+            blockzero-*-windows-x64-setup.exe.sha256
 
   # Fast CLI-only Windows build: no Qt/GUI, so vcpkg does NOT compile Qt from
   # source (which makes the full GUI job take ~90 min). Publishes the mining
