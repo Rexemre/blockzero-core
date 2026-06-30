@@ -177,11 +177,3 @@ See [doc/build-unix.md](doc/build-unix.md) and [doc/build-windows-msvc.md](doc/b
 - Upstream baseline: Bitcoin Core v31.0 — see [UPSTREAM.md](UPSTREAM.md).
 
 ---
-
-## Disclaimer
-
-Block Zero is free, open-source software. BLOZ and TBLOZ are experimental coins
-that carry **no** promised value, liquidity or return. Nothing here is financial
-advice. You run the software and participate entirely at your own risk.
-
-> **Warning:** Copycat sites (e.g. `.cc` domains) and third-party pools are **not affiliated** with Block Zero — we have no insight into their code and accept **no liability** for malware, wrong-chain mining, fraud, or unfair pool payouts. [Read the full warning →](https://github.com/Rexemre/blockzero-docs/blob/main/official-links.md#warning-copycat-sites--unofficial-services)

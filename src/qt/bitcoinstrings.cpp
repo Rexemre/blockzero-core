@@ -220,7 +220,6 @@ QT_TRANSLATE_NOOP("bitcoin-core", "The transactions removal process can only be 
 QT_TRANSLATE_NOOP("bitcoin-core", "The wallet will avoid paying less than the minimum relay fee."),
 QT_TRANSLATE_NOOP("bitcoin-core", "There is no ScriptPubKeyManager for this address"),
 QT_TRANSLATE_NOOP("bitcoin-core", "This is a pre-release test build - use at your own risk - do not use for mining or merchant applications"),
-QT_TRANSLATE_NOOP("bitcoin-core", "This is experimental software."),
 QT_TRANSLATE_NOOP("bitcoin-core", "This is the maximum transaction fee you pay (in addition to the normal fee) to prioritize partial spend avoidance over regular coin selection."),
 QT_TRANSLATE_NOOP("bitcoin-core", "This is the minimum transaction fee you pay on every transaction."),
 QT_TRANSLATE_NOOP("bitcoin-core", "This is the transaction fee you may discard if change is smaller than dust at this level"),
