@@ -186,7 +186,7 @@ public:
 
         bech32_hrp = "bz";
         m_currency_unit = "BLOZ";
-        m_currency_atom = "sat";
+        m_currency_atom = "rex";
 
         vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
 
@@ -288,7 +288,7 @@ public:
 
         bech32_hrp = "tbz";
         m_currency_unit = "TBLOZ";
-        m_currency_atom = "tsat";
+        m_currency_atom = "trex";
 
         vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_test), std::end(chainparams_seed_test));
 
@@ -709,7 +709,7 @@ public:
 
         bech32_hrp = "bzrt";
         m_currency_unit = "TBLOZ";
-        m_currency_atom = "tsat";
+        m_currency_atom = "trex";
 
         // Copied from Testnet4.
         m_headers_sync_params = HeadersSyncParams{

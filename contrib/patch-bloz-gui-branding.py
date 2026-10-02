@@ -9,6 +9,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Order matters: longer phrases first.
 REPLACEMENTS = [
+    # Smallest-unit rename (Discord decision, Wilday/king kang kong, 2026-09-29):
+    # unit is "Rexemre", short form "rex". Re-applied here so a future upstream
+    # rebase that reintroduces the literal Bitcoin Core strings doesn't silently
+    # undo the rename the way it undid the "Bitcoin block chain" string below.
+    ('If you encrypt your wallet and lose your passphrase, you will <b>LOSE ALL OF YOUR BITCOINS</b>!',
+     'If you encrypt your wallet and lose your passphrase, you will <b>LOSE ALL OF YOUR BLOZ</b>!'),
+    ('Can vary +/- %1 satoshi(s) per input.', 'Can vary +/- %1 rex per input.'),
+    ('a fee rate of "100 satoshis per kvB" for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 satoshis.',
+     'a fee rate of "100 rex per kvB" for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 rex.'),
     ("Partially Signed Bitcoin Transaction", "Partially Signed BLOZ Transaction (PSBT)"),
     ("Partially Signed BLOZ Transaction (PSBT) (PSBT)", "Partially Signed BLOZ Transaction (PSBT)"),
     ("Bitcoin block chain", "Block Zero blockchain"),
@@ -22,6 +31,7 @@ REPLACEMENTS = [
     ("Bitcoin address", "BLOZ address"),
     ("Invalid Bitcoin address", "Invalid BLOZ address"),
     ("valid Bitcoin address", "valid BLOZ address"),
+    ("bitcoin:BC1…", "bloz:BC1…"),
     ("bitcoin: URIs", "bloz: URIs"),
     ("bitcoin: URI", "bloz: URI"),
     ("bitcoin: click-to-pay", "bloz: click-to-pay"),
@@ -152,6 +162,7 @@ def patch_german_locale() -> None:
         ("Bitcoin-Blockchain", "Block-Zero-Blockchain"),
         ("Bitcoin-Adressen", "BLOZ-Adressen"),
         ("Bitcoin-Adresse", "BLOZ-Adresse"),
+        ("ALLE IHRE BITCOINS VERLIEREN", "ALLE IHRE BLOZ VERLIEREN"),
         ("Bitcoins", "BLOZ"),
         ("Bitcoin-Client", "Block-Zero-Client"),
         ("Bitcoin-Transaktion", "BLOZ-Transaktion"),

@@ -175,7 +175,7 @@ Signing is only possible with addresses of the type &apos;legacy&apos;.</source>
         <context-group purpose="location"><context context-type="linenumber">105</context></context-group>
       </trans-unit>
       <trans-unit id="_msg39">
-        <source xml:space="preserve">Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
+        <source xml:space="preserve">Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BLOZ&lt;/b&gt;!</source>
         <context-group purpose="location"><context context-type="linenumber">106</context></context-group>
       </trans-unit>
       <trans-unit id="_msg40">
@@ -959,7 +959,7 @@ Signing is only possible with addresses of the type &apos;legacy&apos;.</source>
         <context-group purpose="location"><context context-type="linenumber">363</context></context-group>
       </trans-unit>
       <trans-unit id="_msg218">
-        <source xml:space="preserve">Can vary +/- %1 satoshi(s) per input.</source>
+        <source xml:space="preserve">Can vary +/- %1 rex per input.</source>
         <context-group purpose="location"><context context-type="linenumber">528</context></context-group>
       </trans-unit>
       <trans-unit id="_msg219">
@@ -1449,7 +1449,7 @@ The migration process will create a backup of the wallet before migrating. This 
         </trans-unit>
       </group>
       <trans-unit id="_msg317">
-        <source xml:space="preserve">%1 will download and store a copy of the Bitcoin block chain.</source>
+        <source xml:space="preserve">%1 will download and store a copy of the Block Zero blockchain.</source>
         <context-group purpose="location"><context context-type="linenumber">309</context></context-group>
       </trans-unit>
       <trans-unit id="_msg318">
@@ -3426,7 +3426,7 @@ For more information on using this console, type %6.
       <trans-unit id="_msg737">
         <source xml:space="preserve">Specify a custom fee per kB (1,000 bytes) of the transaction&apos;s virtual size.
 
-Note:  Since the fee is calculated on a per-byte basis, a fee rate of &quot;100 satoshis per kvB&quot; for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 satoshis.</source>
+Note:  Since the fee is calculated on a per-byte basis, a fee rate of &quot;100 rex per kvB&quot; for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 rex.</source>
         <context-group purpose="location"><context context-type="linenumber">828</context></context-group>
       </trans-unit>
       <trans-unit id="_msg738">

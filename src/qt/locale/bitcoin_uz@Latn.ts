@@ -995,8 +995,8 @@ Kirish faqat 'legacy' turidagi manzillar uchun.</translation>
         <translation type="unfinished">(%1 қулфланган)</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
-        <translation type="unfinished">Har bir kiruvchi +/- %1  satoshiga farq qilishi mumkin.</translation>
+        <source>Can vary +/- %1 rex per input.</source>
+        <translation type="unfinished">Har bir kiruvchi +/- %1  rexga farq qilishi mumkin.</translation>
     </message>
     <message>
         <source>(no label)</source>

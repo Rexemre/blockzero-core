@@ -979,8 +979,8 @@ L-iffirmar huwa possibbli biss b'indirizzi tat-tip 'legacy'.</translation>
         <translation type="unfinished">(%1 imsakkar)</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
-        <translation type="unfinished">Tista' tvarja +/- %1 satoshi/jiet għal kull input</translation>
+        <source>Can vary +/- %1 rex per input.</source>
+        <translation type="unfinished">Tista' tvarja +/- %1 rex/jiet għal kull input</translation>
     </message>
     <message>
         <source>(no label)</source>

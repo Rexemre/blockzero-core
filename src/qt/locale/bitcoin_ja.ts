@@ -1057,8 +1057,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">(ロック済み %1個)</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
-        <translation type="unfinished">インプット毎に %1 satoshi 前後変動する場合があります。</translation>
+        <source>Can vary +/- %1 rex per input.</source>
+        <translation type="unfinished">インプット毎に %1 rex 前後変動する場合があります。</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -3066,10 +3066,10 @@ For more information on using this console, type %6.
     <message>
         <source>Specify a custom fee per kB (1,000 bytes) of the transaction's virtual size.
 
-Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satoshis per kvB" for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 satoshis.</source>
+Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 rex per kvB" for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 rex.</source>
         <translation type="unfinished">取引の仮想サイズのkB(1000 bytes)当たりのカスタム手数料を設定してください。
 
-注意: 手数料はbyte単位で計算されます。"100 satoshis / kvB"という手数料率のとき、500 仮想バイト (1 kvBの半分)の取引の手数料はたったの50 satoshisと計算されます。</translation>
+注意: 手数料はbyte単位で計算されます。"100 rex / kvB"という手数料率のとき、500 仮想バイト (1 kvBの半分)の取引の手数料はたったの50 rexと計算されます。</translation>
     </message>
     <message>
         <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for bitcoin transactions than the network can process.</source>

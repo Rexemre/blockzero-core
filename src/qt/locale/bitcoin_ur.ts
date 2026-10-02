@@ -999,7 +999,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">مقفل'%1</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
+        <source>Can vary +/- %1 rex per input.</source>
         <translation type="unfinished">مختلف ہو سکتے ہیں%1 +/- ساتوشی فی ان پٹ۔</translation>
     </message>
     <message>

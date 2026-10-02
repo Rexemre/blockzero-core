@@ -1055,8 +1055,8 @@ Sinatzea soilik posible da 'legacy' motako helbideekin.</translation>
         <translation type="unfinished">(%1 blokeatuta)</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
-        <translation type="unfinished">Sarrerako bakoitzeko %1 satoshi gehi/minus aldatu daiteke.</translation>
+        <source>Can vary +/- %1 rex per input.</source>
+        <translation type="unfinished">Sarrerako bakoitzeko %1 rex gehi/minus aldatu daiteke.</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -3082,10 +3082,10 @@ Kontsola hau erabiltzeko informazio gehiago nahi izanez gero, idatzi .
     <message>
         <source>Specify a custom fee per kB (1,000 bytes) of the transaction's virtual size.
 
-Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satoshis per kvB" for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 satoshis.</source>
+Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 rex per kvB" for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 rex.</source>
         <translation type="unfinished">Zehaztu transakzioaren tamaina birtualeko kilobyteko (1.000 byte) komisio pertsonalizatua.
 
-Oharra: Komisioa byte bakoitzeko kalkulatzen denez, "100 satoshi kvB bakoitzeko" komisio-tasa batek, 500 byte birtualeko (1 kvB-ren erdia) transakzio baten kasuan, azken batean 50 satoshiko komisioa emango luke.</translation>
+Oharra: Komisioa byte bakoitzeko kalkulatzen denez, "100 rex kvB bakoitzeko" komisio-tasa batek, 500 byte birtualeko (1 kvB-ren erdia) transakzio baten kasuan, azken batean 50 rexko komisioa emango luke.</translation>
     </message>
     <message>
         <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for bitcoin transactions than the network can process.</source>

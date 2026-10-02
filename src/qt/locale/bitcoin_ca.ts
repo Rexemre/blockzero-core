@@ -1008,8 +1008,8 @@ Només és possible firmar amb adreces del tipus "legacy".</translation>
         <translation type="unfinished">(%1 bloquejada)</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
-        <translation type="unfinished">Pot variar en +/- %1 satoshi(s) per entrada.</translation>
+        <source>Can vary +/- %1 rex per input.</source>
+        <translation type="unfinished">Pot variar en +/- %1 rex per entrada.</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -2898,9 +2898,9 @@ Per a obtenir més informació sobre com utilitzar aquesta consola, escriviu %6.
     <message>
         <source>Specify a custom fee per kB (1,000 bytes) of the transaction's virtual size.
 
-Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satoshis per kvB" for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 satoshis.</source>
+Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 rex per kvB" for a transaction size of 500 virtual bytes (half of 1 kvB) would ultimately yield a fee of only 50 rex.</source>
         <translation type="unfinished">Especifiqueu una tarifa personalitzada per kB (1.000 bytes) de la mida virtual de la transacció.
-Nota: atès que la tarifa es calcula per byte, una tarifa de "100 satoshis per kvB" per a una mida de transacció de 500 bytes virtuals (la meitat d'1 kvB) donaria finalment una tarifa de només 50 satoshis.</translation>
+Nota: atès que la tarifa es calcula per byte, una tarifa de "100 rex per kvB" per a una mida de transacció de 500 bytes virtuals (la meitat d'1 kvB) donaria finalment una tarifa de només 50 rex.</translation>
     </message>
     <message>
         <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for bitcoin transactions than the network can process.</source>

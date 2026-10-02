@@ -1023,7 +1023,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">(%1 заблокирован)</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
+        <source>Can vary +/- %1 rex per input.</source>
         <translation type="unfinished">Может меняться на +/- %1 сатоши за каждый вход.</translation>
     </message>
     <message>

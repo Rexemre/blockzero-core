@@ -176,8 +176,8 @@ protected:
     std::vector<std::string> vSeeds;
     std::vector<unsigned char> base58Prefixes[MAX_BASE58_TYPES];
     std::string bech32_hrp;
-    std::string m_currency_unit{"BTC"};
-    std::string m_currency_atom{"sat"};
+    std::string m_currency_unit{"BLOZ"};
+    std::string m_currency_atom{"rex"};
     ChainType m_chain_type;
     CBlock genesis;
     std::vector<uint8_t> vFixedSeeds;

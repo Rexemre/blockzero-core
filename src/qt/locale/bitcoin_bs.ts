@@ -832,8 +832,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">(%1 zaključano)</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
-        <translation type="unfinished">Može varirati +/- %1 satoshi (a) po upisu vrijednosti.</translation>
+        <source>Can vary +/- %1 rex per input.</source>
+        <translation type="unfinished">Može varirati +/- %1 rex (a) po upisu vrijednosti.</translation>
     </message>
     <message>
         <source>(no label)</source>
