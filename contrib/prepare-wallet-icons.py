@@ -12,8 +12,8 @@ except ImportError:
 ROOT = Path(__file__).resolve().parents[1]
 ICONS = ROOT / "src/qt/res/icons"
 PIXMAPS = ROOT / "share/pixmaps"
-DOWNLOADS = Path(r"C:\Users\Marlon\Downloads")
-SITE_ASSETS = Path(r"C:\Users\Marlon\MarlonMoralesServer\sites\blockzero\assets")
+DOWNLOADS = Path(r"C:\Users\USER\Downloads")
+SITE_ASSETS = Path(r"C:\Users\USER\ServerRepo\sites\blockzero\assets")
 
 APP_ICON = DOWNLOADS / "favicon-15-06V2.png"
 HERO_LOGO = SITE_ASSETS / "bloz-logo.png"
