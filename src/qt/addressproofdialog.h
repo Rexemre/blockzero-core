@@ -39,7 +39,7 @@ struct AddressProofRequest
     static bool isProofURI(const QString& uri);
     //! Parse and validate. On failure *error holds a user-facing explanation.
     static bool parse(const QString& uri, AddressProofRequest* out, QString* error);
-    //! Only bloz.org and its subdomains may receive signatures.
+    //! Only bloz.org and www.bloz.org may receive signatures (not community subdomains).
     static bool hostAllowed(const QString& host);
 };
 Q_DECLARE_METATYPE(AddressProofRequest)

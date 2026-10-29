@@ -35,6 +35,8 @@
 #include <QUrlQuery>
 
 const int BITCOIN_IPC_CONNECT_TIMEOUT = 1000; // milliseconds
+//! Upper bound for one URI/file name received from a second instance (UTF-16 bytes).
+constexpr quint32 MAX_IPC_MESSAGE_BYTES = 64 * 1024;
 const QString BITCOIN_IPC_PREFIX("bloz:");
 
 //
@@ -278,7 +280,13 @@ void PaymentServer::handleURIConnection()
             quint32 len = 0;
             in >> len;
             // QDataStream (Qt_4_0) encodes a QString as byte length + UTF-16 data; 0xFFFFFFFF = null string.
-            if (len != 0xFFFFFFFF && buffer->size() < (int)(sizeof(quint32) + len)) return;
+            // Anything larger than a sane URI/file name is dropped instead of buffered.
+            if (len != 0xFFFFFFFF && len > MAX_IPC_MESSAGE_BYTES) {
+                *done = true;
+                clientConnection->abort();
+                return;
+            }
+            if (len != 0xFFFFFFFF && buffer->size() < qsizetype(sizeof(quint32) + len)) return;
             *done = true;
             QDataStream in2(*buffer);
             in2.setVersion(QDataStream::Qt_4_0);

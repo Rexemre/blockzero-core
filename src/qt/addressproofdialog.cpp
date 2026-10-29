@@ -59,8 +59,10 @@ bool AddressProofRequest::isProofURI(const QString& uri)
 
 bool AddressProofRequest::hostAllowed(const QString& host_in)
 {
+    // Exact hosts only: subdomains such as <slug>.projects.bloz.org are run by
+    // community members and must not receive signatures meant for bloz.org.
     const QString host = host_in.toLower();
-    return host == QLatin1String("bloz.org") || host.endsWith(QLatin1String(".bloz.org"));
+    return host == QLatin1String("bloz.org") || host == QLatin1String("www.bloz.org");
 }
 
 bool AddressProofRequest::parse(const QString& uri, AddressProofRequest* out, QString* error)

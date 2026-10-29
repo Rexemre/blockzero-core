@@ -5,7 +5,11 @@
 #include <qt/test/uritests.h>
 
 #include <qt/guiutil.h>
+#include <qt/updatechecker.h>
 #include <qt/walletmodel.h>
+#ifdef ENABLE_WALLET
+#include <qt/addressproofdialog.h>
+#endif
 
 #include <QUrl>
 
@@ -89,4 +93,39 @@ void URITests::uriTests()
     QVERIFY(rv.address == QString("175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W"));
     QVERIFY(rv.amount == 10000000000LL);
     QVERIFY(rv.label == QString("%3F"));
+}
+
+void URITests::updateVersionTests()
+{
+    QVERIFY(UpdateChecker::isNewer("v1.0.0-rc40", "v1.0.0-rc39"));
+    QVERIFY(UpdateChecker::isNewer("v1.0.0-rc10", "v1.0.0-rc9"));
+    QVERIFY(UpdateChecker::isNewer("v1.0.0", "v1.0.0-rc39"));
+    QVERIFY(UpdateChecker::isNewer("v1.0.1-rc1", "v1.0.0"));
+    // Never a downgrade or a re-install of the same version.
+    QVERIFY(!UpdateChecker::isNewer("v1.0.0-rc39", "v1.0.0-rc39"));
+    QVERIFY(!UpdateChecker::isNewer("v1.0.0-rc38", "v1.0.0-rc39"));
+    QVERIFY(!UpdateChecker::isNewer("v1.0.0-rc39", "v1.0.0"));
+    // Unparsable tags are never offered.
+    QVERIFY(!UpdateChecker::isNewer("v1.0.0-rc40/../../x", "v1.0.0-rc39"));
+    QVERIFY(!UpdateChecker::isNewer("latest", "v1.0.0-rc39"));
+    QVERIFY(!UpdateChecker::isNewer("v1.0.0-rc40", ""));
+}
+
+void URITests::addressProofTests()
+{
+#ifdef ENABLE_WALLET
+    const QString tail = QStringLiteral("&t=abc&m=Verify%20me&exp=4102444800");
+    AddressProofRequest req;
+    QVERIFY(AddressProofRequest::parse("bloz:verify?v=1&cb=https%3A%2F%2Fbloz.org%2Fcommunity%2Fapi%2Fwallet%2Fconnect%2Fcallback" + tail, &req, nullptr));
+    QCOMPARE(req.site, QStringLiteral("bloz.org"));
+    QVERIFY(AddressProofRequest::parse("bloz:verify?v=1&cb=https%3A%2F%2Fwww.bloz.org%2Fcb" + tail, &req, nullptr));
+    // Community subdomains, look-alike hosts, plain http and credentials are refused.
+    QVERIFY(!AddressProofRequest::parse("bloz:verify?v=1&cb=https%3A%2F%2Fevil.projects.bloz.org%2Fcb" + tail, &req, nullptr));
+    QVERIFY(!AddressProofRequest::parse("bloz:verify?v=1&cb=https%3A%2F%2Fbloz.org.evil.com%2Fcb" + tail, &req, nullptr));
+    QVERIFY(!AddressProofRequest::parse("bloz:verify?v=1&cb=https%3A%2F%2Fevilbloz.org%2Fcb" + tail, &req, nullptr));
+    QVERIFY(!AddressProofRequest::parse("bloz:verify?v=1&cb=http%3A%2F%2Fbloz.org%2Fcb" + tail, &req, nullptr));
+    QVERIFY(!AddressProofRequest::parse("bloz:verify?v=1&cb=https%3A%2F%2Fa%3Ab%40bloz.org%2Fcb" + tail, &req, nullptr));
+    // Expired links are refused.
+    QVERIFY(!AddressProofRequest::parse("bloz:verify?v=1&cb=https%3A%2F%2Fbloz.org%2Fcb&t=abc&m=x&exp=1000", &req, nullptr));
+#endif
 }

@@ -29,6 +29,9 @@ namespace {
 const char* const RELEASES_API = "https://api.github.com/repos/Rexemre/blockzero-core/releases/latest";
 const char* const RELEASES_PAGE = "https://github.com/Rexemre/blockzero-core/releases/latest";
 const char* const INSTALLER_NAME = "blockzero-windows-x64-setup.exe";
+//! Only URLs under these prefixes are followed (opened, downloaded); anything else in the API answer is ignored.
+const char* const RELEASE_PAGE_PREFIX = "https://github.com/Rexemre/blockzero-core/releases/";
+const char* const RELEASE_DOWNLOAD_PREFIX = "https://github.com/Rexemre/blockzero-core/releases/download/";
 constexpr int NETWORK_TIMEOUT_MS = 20000;
 constexpr qint64 CHECK_INTERVAL_SECS = 20 * 60 * 60; // "once a day" with some slack for daily users
 
@@ -49,6 +52,14 @@ Version parseTag(const QString& tag)
     v.rc = m.captured(4).isEmpty() ? 0 : m.captured(4).toInt();
     v.valid = true;
     return v;
+}
+
+//! True if url is an https URL that starts with prefix (no credentials, no other host).
+bool urlUnder(const QString& url, const char* prefix)
+{
+    const QUrl u(url, QUrl::StrictMode);
+    return u.isValid() && u.userInfo().isEmpty() && u.scheme() == QLatin1String("https") &&
+           u.host() == QLatin1String("github.com") && url.startsWith(QLatin1String(prefix));
 }
 
 QString userAgent()
@@ -146,11 +157,13 @@ void UpdateChecker::check(bool manual)
         Release rel;
         rel.tag = obj.value(QStringLiteral("tag_name")).toString();
         rel.page_url = obj.value(QStringLiteral("html_url")).toString();
-        if (rel.page_url.isEmpty()) rel.page_url = QString::fromLatin1(RELEASES_PAGE);
+        if (!urlUnder(rel.page_url, RELEASE_PAGE_PREFIX)) rel.page_url = QString::fromLatin1(RELEASES_PAGE);
+        const QString download_prefix = QString::fromLatin1(RELEASE_DOWNLOAD_PREFIX) + rel.tag + QLatin1Char('/');
         for (const QJsonValue& a : obj.value(QStringLiteral("assets")).toArray()) {
             const QJsonObject asset = a.toObject();
             const QString name = asset.value(QStringLiteral("name")).toString();
             const QString url = asset.value(QStringLiteral("browser_download_url")).toString();
+            if (!urlUnder(url, RELEASE_DOWNLOAD_PREFIX) || !url.startsWith(download_prefix)) continue;
             if (name == QLatin1String(INSTALLER_NAME)) rel.installer_url = url;
             else if (name == QLatin1String(INSTALLER_NAME) + QLatin1String(".sha256")) rel.checksum_url = url;
         }
@@ -202,7 +215,7 @@ bool download(QNetworkAccessManager& nam, const QUrl& url, QFile* file, QByteArr
 
 void UpdateChecker::downloadAndInstall(const Release& release, QWidget* parent)
 {
-    if (release.installer_url.isEmpty() || release.checksum_url.isEmpty()) {
+    if (!urlUnder(release.installer_url, RELEASE_DOWNLOAD_PREFIX) || !urlUnder(release.checksum_url, RELEASE_DOWNLOAD_PREFIX)) {
         Q_EMIT failed(tr("This release has no Windows installer yet. Please download it from the release page."), true);
         return;
     }
