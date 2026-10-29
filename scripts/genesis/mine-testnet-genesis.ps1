@@ -12,7 +12,7 @@ param(
     [string]$LogFile = "genesis-mine.log",
     [switch]$UseWsl,
     [string]$WslDistro = "Ubuntu-22.04",
-    [string]$WslMinerPath = "/home/marlon/blockzero-core/build/bin/bz-genesis-miner"
+    [string]$WslMinerPath = "/home/USER/blockzero-core/build/bin/bz-genesis-miner"
 )
 
 $ErrorActionPreference = "Stop"
@@ -78,9 +78,9 @@ if ($UseWsl -or (-not $winMiner)) {
         Write-Host "Using WSL miner (slow in WSL2 - expect 30-90 min)."
     }
 
-    $wslRepo = "/home/marlon/blockzero-core"
+    $wslRepo = "/home/USER/blockzero-core"
     $sync = @"
-cp /mnt/c/Users/Marlon/blockzero/blockzero-core/src/bz_genesis_miner.cpp $wslRepo/src/bz_genesis_miner.cpp && cd $wslRepo && cmake --build build --target bz-genesis-miner -j`$(nproc) && $WslMinerPath
+cp /mnt/c/Users/USER/blockzero/blockzero-core/src/bz_genesis_miner.cpp $wslRepo/src/bz_genesis_miner.cpp && cd $wslRepo && cmake --build build --target bz-genesis-miner -j`$(nproc) && $WslMinerPath
 "@
     Write-Host "WSL: building/running bz-genesis-miner..."
     wsl -d $WslDistro -e bash -lc $sync 2>&1 | Tee-Object -FilePath $logPath
