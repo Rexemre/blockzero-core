@@ -38,6 +38,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="checkForUpdates">
+         <property name="toolTip">
+          <string>Once a day, ask GitHub whether a newer Block Zero wallet release exists and offer to install it. Nothing else is sent.</string>
+         </property>
+         <property name="text">
+          <string>Check for wallet &amp;updates at startup</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_0_Main">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>

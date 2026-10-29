@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Block Zero
+GenericName=BLOZ Wallet
+Comment=Block Zero (BLOZ) wallet and full node
+Exec=block-zero %u
+Icon=block-zero
+Terminal=false
+Categories=Office;Finance;Network;
+Keywords=bloz;block zero;blockzero;wallet;crypto;bitcoin;
+MimeType=x-scheme-handler/bloz;
+StartupNotify=true
+StartupWMClass=Block Zero

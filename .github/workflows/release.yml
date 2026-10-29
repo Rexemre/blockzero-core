@@ -45,28 +45,70 @@ jobs:
 
       - name: Build
         run: |
-          cmake -B build ${{ env.BUILD_FLAGS }}
+          cmake -B build ${{ env.BUILD_FLAGS }} -DBLOZ_RELEASE_TAG="${GITHUB_REF_NAME}"
           cmake --build build -j"$(nproc)" --target bitcoind bitcoin-cli bitcoin-qt bz-genesis-miner
 
       - name: Package
         run: |
           TAG="${GITHUB_REF_NAME}"
           PKG="blockzero-${TAG}-linux-${{ matrix.arch }}"
-          mkdir -p "${PKG}/bin"
+          mkdir -p "${PKG}/bin" "${PKG}/share/icons"
           cp build/bin/bitcoind build/bin/bitcoin-cli build/bin/bz-genesis-miner "${PKG}/bin/"
           # GUI wallet ships as "block-zero" (terminal-friendly; same Block Zero
           # branding compiled in). bitcoind/bitcoin-cli keep their names for scripts.
           cp build/bin/bitcoin-qt "${PKG}/bin/block-zero"
           cp contrib/mainnet/bitcoin.conf.example "${PKG}/bitcoin.conf.example"
           cp contrib/testnet/bitcoin.conf.example "${PKG}/bitcoin.conf.testnet.example"
+          # Desktop integration (menu entry, icon, bloz: link handler) for the tarball.
+          cp contrib/linux/block-zero.desktop "${PKG}/share/"
+          cp contrib/linux/icons/block-zero-*.png "${PKG}/share/icons/"
+          cp contrib/linux/install-desktop-entry.sh "${PKG}/"
+          chmod +x "${PKG}/install-desktop-entry.sh"
           tar -czf "${PKG}.tar.gz" "${PKG}"
           sha256sum "${PKG}.tar.gz" > "${PKG}.tar.gz.sha256"
+
+      # Self-contained GUI wallet: Qt and all libraries bundled, one executable
+      # file, menu entry + icon + bloz: handler via the embedded .desktop file.
+      - name: Build AppImage
+        continue-on-error: true
+        run: |
+          set -e
+          TAG="${GITHUB_REF_NAME}"
+          case "${{ matrix.arch }}" in
+            x64)   LD_ARCH=x86_64 ;;
+            arm64) LD_ARCH=aarch64 ;;
+          esac
+          sudo apt-get install -y libfuse2 file desktop-file-utils
+          curl -sSL -o linuxdeploy.AppImage \
+            "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${LD_ARCH}.AppImage"
+          curl -sSL -o linuxdeploy-plugin-qt.AppImage \
+            "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-${LD_ARCH}.AppImage"
+          chmod +x linuxdeploy.AppImage linuxdeploy-plugin-qt.AppImage
+          APPDIR="$PWD/AppDir"
+          rm -rf "$APPDIR"
+          mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications"
+          cp build/bin/bitcoin-qt "$APPDIR/usr/bin/block-zero"
+          cp build/bin/bitcoind build/bin/bitcoin-cli "$APPDIR/usr/bin/"
+          cp contrib/linux/block-zero.desktop "$APPDIR/usr/share/applications/"
+          for s in 16 22 24 32 48 64 128 256 512; do
+            mkdir -p "$APPDIR/usr/share/icons/hicolor/${s}x${s}/apps"
+            cp "contrib/linux/icons/block-zero-${s}.png" "$APPDIR/usr/share/icons/hicolor/${s}x${s}/apps/block-zero.png"
+          done
+          export QMAKE=/usr/bin/qmake6
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          export LINUXDEPLOY_OUTPUT_VERSION="${TAG#v}"
+          export OUTPUT="blockzero-${TAG}-linux-${{ matrix.arch }}.AppImage"
+          ./linuxdeploy.AppImage --appdir "$APPDIR" --plugin qt --output appimage
+          ls -la "$OUTPUT"
+          sha256sum "$OUTPUT" > "$OUTPUT.sha256"
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             blockzero-*-linux-${{ matrix.arch }}.tar.gz
             blockzero-*-linux-${{ matrix.arch }}.tar.gz.sha256
+            blockzero-*-linux-${{ matrix.arch }}.AppImage
+            blockzero-*-linux-${{ matrix.arch }}.AppImage.sha256
 
   macos:
     # Apple Silicon only. The macos-13 (Intel) runners are scarce and routinely
@@ -91,6 +133,7 @@ jobs:
       - name: Build
         run: |
           cmake -B build ${{ env.BUILD_FLAGS }} \
+            -DBLOZ_RELEASE_TAG="${GITHUB_REF_NAME}" \
             -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6)"
           cmake --build build -j"$(sysctl -n hw.ncpu)" --target bitcoind bitcoin-cli bitcoin-qt bz-genesis-miner
 
@@ -285,6 +328,7 @@ jobs:
             -DWITH_ZMQ=OFF `
             -DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON `
             -DVCPKG_MANIFEST_FEATURES="wallet;qrencode" `
+            -DBLOZ_RELEASE_TAG="$env:GITHUB_REF_NAME" `
             -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
 
       - name: Build

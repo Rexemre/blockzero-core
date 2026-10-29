@@ -182,6 +182,10 @@ bool OptionsModel::Init(bilingual_str& error)
         settings.setValue("fMinimizeToTray", false);
     fMinimizeToTray = settings.value("fMinimizeToTray").toBool() && m_show_tray_icon;
 
+    if (!settings.contains("fCheckForUpdates"))
+        settings.setValue("fCheckForUpdates", true);
+    m_check_updates = settings.value("fCheckForUpdates").toBool();
+
     if (!settings.contains("fMinimizeOnClose"))
         settings.setValue("fMinimizeOnClose", false);
     fMinimizeOnClose = settings.value("fMinimizeOnClose").toBool();
@@ -410,6 +414,8 @@ QVariant OptionsModel::getOption(OptionID option, const std::string& suffix) con
         return m_show_tray_icon;
     case MinimizeToTray:
         return fMinimizeToTray;
+    case CheckForUpdates:
+        return m_check_updates;
     case MapPortNatpmp:
         return SettingToBool(setting(), DEFAULT_NATPMP);
     case MinimizeOnClose:
@@ -521,6 +527,10 @@ bool OptionsModel::setOption(OptionID option, const QVariant& value, const std::
     case MinimizeToTray:
         fMinimizeToTray = value.toBool();
         settings.setValue("fMinimizeToTray", fMinimizeToTray);
+        break;
+    case CheckForUpdates:
+        m_check_updates = value.toBool();
+        settings.setValue("fCheckForUpdates", m_check_updates);
         break;
     case MapPortNatpmp: // core option - can be changed on-the-fly
         if (changed()) {

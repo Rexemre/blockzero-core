@@ -6,6 +6,8 @@
 
 #include <qt/bitcoingui.h>
 
+#include <qt/updatechecker.h>
+
 #include <qt/bitcoinunits.h>
 #include <qt/clientmodel.h>
 #include <qt/createwalletdialog.h>
@@ -23,6 +25,7 @@
 
 #ifdef ENABLE_WALLET
 #include <qt/walletcontroller.h>
+#include <qt/addressproofdialog.h>
 #include <qt/walletframe.h>
 #include <qt/walletmodel.h>
 #include <qt/walletview.h>
@@ -41,12 +44,15 @@
 #include <util/translation.h>
 #include <validation.h>
 
+#include <logging.h>
+
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
 #include <QComboBox>
 #include <QCursor>
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QDragEnterEvent>
 #include <QInputDialog>
 #include <QKeySequence>
@@ -56,6 +62,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProgressDialog>
+#include <QPushButton>
 #include <QScreen>
 #include <QSettings>
 #include <QShortcut>
@@ -153,6 +160,9 @@ BitcoinGUI::BitcoinGUI(interfaces::Node& node, const PlatformStyle *_platformSty
         createTrayIcon();
     }
     notificator = new Notificator(QApplication::applicationName(), trayIcon, this);
+
+    m_update_checker = new UpdateChecker(this);
+    setupUpdateChecker();
 
     // Create status bar
     statusBar();
@@ -316,6 +326,9 @@ void BitcoinGUI::createActions()
     aboutQtAction = new QAction(tr("About &Qt"), this);
     aboutQtAction->setStatusTip(tr("Show information about Qt"));
     aboutQtAction->setMenuRole(QAction::AboutQtRole);
+    m_check_updates_action = new QAction(tr("Check for &updates…"), this);
+    m_check_updates_action->setStatusTip(tr("Look for a newer Block Zero wallet release on GitHub"));
+    m_check_updates_action->setMenuRole(QAction::ApplicationSpecificRole);
     optionsAction = new QAction(tr("&Options…"), this);
     optionsAction->setStatusTip(tr("Modify configuration options for %1").arg(CLIENT_NAME));
     optionsAction->setMenuRole(QAction::PreferencesRole);
@@ -389,6 +402,7 @@ void BitcoinGUI::createActions()
     connect(quitAction, &QAction::triggered, this, &BitcoinGUI::quitRequested);
     connect(aboutAction, &QAction::triggered, this, &BitcoinGUI::aboutClicked);
     connect(aboutQtAction, &QAction::triggered, qApp, QApplication::aboutQt);
+    connect(m_check_updates_action, &QAction::triggered, this, &BitcoinGUI::checkForUpdatesClicked);
     connect(optionsAction, &QAction::triggered, this, &BitcoinGUI::optionsClicked);
     connect(showHelpMessageAction, &QAction::triggered, this, &BitcoinGUI::showHelpMessageClicked);
     connect(openRPCConsoleAction, &QAction::triggered, this, &BitcoinGUI::showDebugWindow);
@@ -629,6 +643,8 @@ void BitcoinGUI::createMenuBar()
 
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
     help->addAction(showHelpMessageAction);
+    help->addSeparator();
+    help->addAction(m_check_updates_action);
     help->addSeparator();
     help->addAction(aboutAction);
     help->addAction(aboutQtAction);
@@ -987,6 +1003,65 @@ void BitcoinGUI::aboutClicked()
 
     auto dlg = new HelpMessageDialog(this, /*about=*/true);
     GUIUtil::ShowModalDialogAsynchronously(dlg);
+}
+
+void BitcoinGUI::setupUpdateChecker()
+{
+    connect(m_update_checker, &UpdateChecker::upToDate, this, [this](const QString& tag, bool manual) {
+        if (!manual) return;
+        QMessageBox::information(this, tr("Check for updates"),
+            tr("You are running the latest Block Zero wallet (%1).").arg(UpdateChecker::currentTag().isEmpty() ? tag : UpdateChecker::currentTag()));
+    });
+    connect(m_update_checker, &UpdateChecker::failed, this, [this](const QString& error, bool manual) {
+        if (!manual) return;
+        QMessageBox::warning(this, tr("Check for updates"), error);
+    });
+    connect(m_update_checker, &UpdateChecker::installerStarted, this, [this] {
+        // Let the installer replace our files: shut the wallet down cleanly.
+        QTimer::singleShot(500, this, [this] { Q_EMIT quitRequested(); });
+    });
+    connect(m_update_checker, &UpdateChecker::updateAvailable, this, [this](const UpdateChecker::Release& release, bool manual) {
+        if (!manual && UpdateChecker::isSkipped(release.tag)) return;
+        QMessageBox box(this);
+        box.setIcon(QMessageBox::Information);
+        box.setWindowTitle(tr("Update available"));
+        box.setText(tr("Block Zero %1 is available. You are running %2.").arg(release.tag, UpdateChecker::currentTag()));
+#ifdef Q_OS_WIN
+        const bool can_install = !release.installer_url.isEmpty() && !release.checksum_url.isEmpty();
+        box.setInformativeText(can_install
+            ? tr("The installer is downloaded from GitHub, its checksum is verified, then it starts and the wallet closes. Your wallet files and data are not touched by the update.")
+            : tr("Open the release page to download the new version."));
+        QPushButton* install = can_install ? box.addButton(tr("Download and install"), QMessageBox::AcceptRole) : nullptr;
+#else
+        const bool can_install = false;
+        QPushButton* install = nullptr;
+        box.setInformativeText(tr("Open the release page to download the new version."));
+#endif
+        QPushButton* page = box.addButton(tr("Open release page"), QMessageBox::ActionRole);
+        QPushButton* skip = manual ? nullptr : box.addButton(tr("Skip this version"), QMessageBox::RejectRole);
+        QPushButton* later = box.addButton(tr("Later"), QMessageBox::RejectRole);
+        box.setDefaultButton(can_install ? install : page);
+        box.setEscapeButton(later);
+        box.exec();
+        if (box.clickedButton() == page) {
+            QDesktopServices::openUrl(QUrl(release.page_url));
+        } else if (skip && box.clickedButton() == skip) {
+            UpdateChecker::skipVersion(release.tag);
+        } else if (install && box.clickedButton() == install) {
+            m_update_checker->downloadAndInstall(release, this);
+        }
+    });
+}
+
+void BitcoinGUI::checkForUpdatesClicked()
+{
+    m_update_checker->check(/*manual=*/true);
+}
+
+void BitcoinGUI::startupUpdateCheck()
+{
+    if (!UpdateChecker::startupCheckDue()) return;
+    QTimer::singleShot(std::chrono::seconds{20}, m_update_checker, [this] { m_update_checker->check(/*manual=*/false); });
 }
 
 void BitcoinGUI::showDebugWindow()
@@ -1452,6 +1527,25 @@ bool BitcoinGUI::eventFilter(QObject *object, QEvent *event)
 }
 
 #ifdef ENABLE_WALLET
+void BitcoinGUI::handleAddressProofRequest(const AddressProofRequest& request)
+{
+    showNormalIfMinimized();
+    WalletModel* wallet_model = walletFrame ? walletFrame->currentWalletModel() : nullptr;
+    if (!wallet_model) {
+        LogInfo("GUI: address verification request from %s, but no wallet is open", request.site.toStdString());
+        message(tr("Address verification"),
+                tr("%1 asks you to verify a Block Zero address, but no wallet is open. Open or create a wallet, then click the link on the website again.").arg(request.site),
+                CClientUIInterface::MSG_WARNING | CClientUIInterface::MODAL);
+        return;
+    }
+    LogInfo("GUI: showing address verification dialog for %s", request.site.toStdString());
+    auto* dlg = new AddressProofDialog(platformStyle, request, wallet_model, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->show();
+    dlg->raise();
+    dlg->activateWindow();
+}
+
 bool BitcoinGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
 {
     // URI has to be valid

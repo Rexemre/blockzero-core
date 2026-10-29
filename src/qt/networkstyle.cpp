@@ -74,8 +74,15 @@ NetworkStyle::NetworkStyle(const QString &_appName, const int iconColorHueShift,
         pixmap.convertFromImage(img);
     }
 
-    appIcon             = QIcon(pixmap);
-    trayAndWindowIcon   = QIcon(pixmap.scaled(QSize(256,256)));
+    // Provide every common icon size, smoothly downscaled, so the taskbar, the
+    // window title, the tray and the Alt-Tab switcher all get a crisp icon
+    // instead of a blurry nearest-neighbour scale of the big logo.
+    QIcon icon;
+    for (const int size : {16, 20, 24, 32, 40, 48, 64, 96, 128, 256, 512}) {
+        icon.addPixmap(pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
+    appIcon             = icon;
+    trayAndWindowIcon   = icon;
 }
 
 const NetworkStyle* NetworkStyle::instantiate(const ChainType networkId)

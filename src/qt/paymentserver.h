@@ -32,6 +32,7 @@
 // sends them to the server.
 //
 
+#include <qt/addressproofdialog.h>
 #include <qt/sendcoinsrecipient.h>
 
 #include <QObject>
@@ -78,6 +79,9 @@ public:
 Q_SIGNALS:
     // Fired when a valid payment request is received
     void receivedPaymentRequest(SendCoinsRecipient);
+
+    // Fired when a bloz:verify?... link (website asks to prove an address) was received and validated
+    void receivedAddressProofRequest(const AddressProofRequest& request);
 
     // Fired when a message should be reported to the user
     void message(const QString &title, const QString &message, unsigned int style);

@@ -27,6 +27,8 @@
 #include <QFileOpenEvent>
 #include <QHash>
 #include <QList>
+#include <logging.h>
+
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QStringList>
@@ -95,7 +97,7 @@ bool PaymentServer::ipcSendCommandLine()
     for (const QString& r : savedPaymentRequests)
     {
         QLocalSocket* socket = new QLocalSocket();
-        socket->connectToServer(ipcServerName(), QIODevice::WriteOnly);
+        socket->connectToServer(ipcServerName(), QIODevice::ReadWrite);
         if (!socket->waitForConnected(BITCOIN_IPC_CONNECT_TIMEOUT))
         {
             delete socket;
@@ -112,7 +114,16 @@ bool PaymentServer::ipcSendCommandLine()
         socket->write(block);
         socket->flush();
         socket->waitForBytesWritten(BITCOIN_IPC_CONNECT_TIMEOUT);
+        // Wait until the running instance confirms it has read the URI (one
+        // byte). Closing the pipe right after writing let Windows discard the
+        // buffered bytes and left the receiver spinning forever (Qt 6 named
+        // pipes), which froze the running wallet.
+        socket->waitForReadyRead(BITCOIN_IPC_CONNECT_TIMEOUT);
+        socket->readAll();
         socket->disconnectFromServer();
+        if (socket->state() != QLocalSocket::UnconnectedState) {
+            socket->waitForDisconnected(BITCOIN_IPC_CONNECT_TIMEOUT);
+        }
 
         delete socket;
         socket = nullptr;
@@ -196,6 +207,19 @@ void PaymentServer::handleURIOrFile(const QString& s)
     }
     else if (s.startsWith(BITCOIN_IPC_PREFIX, Qt::CaseInsensitive) || s.startsWith("bitcoin:", Qt::CaseInsensitive))
     {
+        // bloz:verify?... : a website (bloz.org) asks the user to prove an address by signing a message
+        if (AddressProofRequest::isProofURI(s)) {
+            AddressProofRequest request;
+            QString error;
+            if (AddressProofRequest::parse(s, &request, &error)) {
+                LogInfo("GUI: address verification request from %s received", request.site.toStdString());
+                Q_EMIT receivedAddressProofRequest(request);
+            } else {
+                LogInfo("GUI: address verification link rejected: %s", error.toStdString());
+                Q_EMIT message(tr("Address verification"), error, CClientUIInterface::MSG_ERROR);
+            }
+            return;
+        }
         QUrlQuery uri((QUrl(s)));
         // normal URI
         {
@@ -240,22 +264,39 @@ void PaymentServer::handleURIOrFile(const QString& s)
 
 void PaymentServer::handleURIConnection()
 {
-    QLocalSocket *clientConnection = uriServer->nextPendingConnection();
-
-    while (clientConnection->bytesAvailable() < (int)sizeof(quint32))
-        clientConnection->waitForReadyRead();
-
-    connect(clientConnection, &QLocalSocket::disconnected, clientConnection, &QLocalSocket::deleteLater);
-
-    QDataStream in(clientConnection);
-    in.setVersion(QDataStream::Qt_4_0);
-    if (clientConnection->bytesAvailable() < (int)sizeof(quint16)) {
-        return;
+    // Read asynchronously: the old blocking "waitForReadyRead until 4 bytes"
+    // loop froze the whole GUI on Windows with Qt 6 whenever the sender had
+    // already closed its end of the pipe.
+    while (QLocalSocket* clientConnection = uriServer->nextPendingConnection()) {
+        auto buffer = std::make_shared<QByteArray>();
+        auto done = std::make_shared<bool>(false);
+        auto tryHandle = [this, clientConnection, buffer, done]() {
+            buffer->append(clientConnection->readAll());
+            if (*done || buffer->size() < (int)sizeof(quint32)) return;
+            QDataStream in(*buffer);
+            in.setVersion(QDataStream::Qt_4_0);
+            quint32 len = 0;
+            in >> len;
+            // QDataStream (Qt_4_0) encodes a QString as byte length + UTF-16 data; 0xFFFFFFFF = null string.
+            if (len != 0xFFFFFFFF && buffer->size() < (int)(sizeof(quint32) + len)) return;
+            *done = true;
+            QDataStream in2(*buffer);
+            in2.setVersion(QDataStream::Qt_4_0);
+            QString msg;
+            in2 >> msg;
+            // Acknowledge, so the sender may close its end without losing data.
+            clientConnection->write("1", 1);
+            clientConnection->flush();
+            clientConnection->disconnectFromServer();
+            if (!msg.isEmpty()) handleURIOrFile(msg);
+        };
+        connect(clientConnection, &QLocalSocket::readyRead, clientConnection, tryHandle);
+        connect(clientConnection, &QLocalSocket::disconnected, clientConnection, [clientConnection, tryHandle] {
+            tryHandle();
+            clientConnection->deleteLater();
+        });
+        tryHandle();
     }
-    QString msg;
-    in >> msg;
-
-    handleURIOrFile(msg);
 }
 
 void PaymentServer::setOptionsModel(OptionsModel *_optionsModel)

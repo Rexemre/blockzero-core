@@ -44,6 +44,12 @@ SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayName={#AppName}
 UninstallDisplayIcon={app}\{#AppExe}
+; We register the bloz: link handler (payment links + one-click address
+; verification on bloz.org), so tell Windows that associations change.
+ChangesAssociations=yes
+; If the wallet is running, offer to close it instead of failing on locked files.
+CloseApplications=yes
+RestartApplications=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -61,6 +67,15 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "vc_redist.x64.exe,bitcoin
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
+
+[Registry]
+; bloz: URL scheme -> "Block Zero.exe" "bloz:..." (per-user, removed on uninstall).
+; Used by bloz.org for payment links and the one-click address verification
+; (Profile > Connections > "Open Block Zero wallet").
+Root: HKCU; Subkey: "Software\Classes\bloz"; ValueType: string; ValueName: ""; ValueData: "URL:Block Zero link"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\bloz"; ValueType: string; ValueName: "URL Protocol"; ValueData: ""
+Root: HKCU; Subkey: "Software\Classes\bloz\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExe}"",0"
+Root: HKCU; Subkey: "Software\Classes\bloz\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExe}"" ""%1"""
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent

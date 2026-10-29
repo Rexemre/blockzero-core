@@ -33,6 +33,8 @@ class OptionsModel;
 class PlatformStyle;
 class RPCConsole;
 class SendCoinsRecipient;
+struct AddressProofRequest;
+class UpdateChecker;
 class UnitDisplayStatusBarControl;
 class WalletController;
 class WalletFrame;
@@ -153,6 +155,8 @@ private:
     QAction* openRPCConsoleAction = nullptr;
     QAction* openAction = nullptr;
     QAction* showHelpMessageAction = nullptr;
+    QAction* m_check_updates_action{nullptr};
+    UpdateChecker* m_update_checker{nullptr};
     QAction* m_create_wallet_action{nullptr};
     QAction* m_open_wallet_action{nullptr};
     QMenu* m_open_wallet_menu{nullptr};
@@ -213,6 +217,9 @@ private:
 
     /** Open the OptionsDialog on the specified tab index */
     void openOptionsDialogWithTab(OptionsDialog::Tab tab);
+
+    /** Wire the update checker signals to dialogs */
+    void setupUpdateChecker();
 
 Q_SIGNALS:
     void quitRequested();
@@ -298,7 +305,13 @@ public Q_SLOTS:
 
     /** Show open dialog */
     void openClicked();
+    /** A website asked the user to prove ownership of an address (bloz:verify link) */
+    void handleAddressProofRequest(const AddressProofRequest& request);
 #endif // ENABLE_WALLET
+    /** Help > Check for updates… (manual) */
+    void checkForUpdatesClicked();
+    /** Automatic update check shortly after start, if enabled and due */
+    void startupUpdateCheck();
     /** Show configuration dialog */
     void optionsClicked();
     /** Show about dialog */

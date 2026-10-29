@@ -123,6 +123,8 @@ add_library(bitcoinqt STATIC EXCLUDE_FROM_ALL
   splashscreen.h
   trafficgraphwidget.cpp
   trafficgraphwidget.h
+  updatechecker.cpp
+  updatechecker.h
   utilitydialog.cpp
   utilitydialog.h
   $<$<PLATFORM_ID:Windows>:winshutdownmonitor.cpp>
@@ -135,6 +137,12 @@ target_compile_definitions(bitcoinqt
     QT_NO_KEYWORDS
     QT_USE_QSTRINGBUILDER
 )
+# Release tag this build is published as (CI passes -DBLOZ_RELEASE_TAG=v1.0.0-rcNN).
+# The update checker compares it with the latest GitHub release; empty = dev build.
+set(BLOZ_RELEASE_TAG "" CACHE STRING "Release tag of this build (e.g. v1.0.0-rc39), empty for development builds")
+if(BLOZ_RELEASE_TAG)
+  target_compile_definitions(bitcoinqt PRIVATE BLOZ_RELEASE_TAG="${BLOZ_RELEASE_TAG}")
+endif()
 target_include_directories(bitcoinqt
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
@@ -147,6 +155,7 @@ target_link_libraries(bitcoinqt
   PUBLIC
     Qt6::Widgets
   PRIVATE
+    Qt6::Network
     core_interface
     bitcoin_cli
     leveldb
@@ -201,6 +210,8 @@ if(ENABLE_WALLET)
       sendcoinsentry.h
       signverifymessagedialog.cpp
       signverifymessagedialog.h
+      addressproofdialog.cpp
+      addressproofdialog.h
       transactiondesc.cpp
       transactiondesc.h
       transactiondescdialog.cpp

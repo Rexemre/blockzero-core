@@ -3,6 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <qt/openuridialog.h>
+
+#include <qt/addressproofdialog.h>
 #include <qt/forms/ui_openuridialog.h>
 
 #include <qt/guiutil.h>
@@ -37,7 +39,15 @@ QString OpenURIDialog::getURI()
 void OpenURIDialog::accept()
 {
     SendCoinsRecipient rcp;
-    if (GUIUtil::parseBitcoinURI(getURI(), &rcp)) {
+    if (AddressProofRequest::isProofURI(getURI())) {
+        // bloz:verify?... from bloz.org (address verification), handled by the payment server
+        QString error;
+        if (AddressProofRequest::parse(getURI(), nullptr, &error)) {
+            QDialog::accept();
+        } else {
+            ui->uriEdit->setValid(false);
+        }
+    } else if (GUIUtil::parseBitcoinURI(getURI(), &rcp)) {
         /* Only accept value URIs */
         QDialog::accept();
     } else {

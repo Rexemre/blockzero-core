@@ -50,6 +50,7 @@ public:
         StartAtStartup,         // bool
         ShowTrayIcon,           // bool
         MinimizeToTray,         // bool
+        CheckForUpdates,        // bool
         MapPortNatpmp,          // bool
         MinimizeOnClose,        // bool
         ProxyUse,               // bool
@@ -99,6 +100,7 @@ public:
     /* Explicit getters */
     bool getShowTrayIcon() const { return m_show_tray_icon; }
     bool getMinimizeToTray() const { return fMinimizeToTray; }
+    bool getCheckForUpdates() const { return m_check_updates; }
     bool getMinimizeOnClose() const { return fMinimizeOnClose; }
     BitcoinUnit getDisplayUnit() const { return m_display_bitcoin_unit; }
     QString getThirdPartyTxUrls() const { return strThirdPartyTxUrls; }
@@ -125,6 +127,7 @@ private:
     /* Qt-only settings */
     bool m_show_tray_icon;
     bool fMinimizeToTray;
+    bool m_check_updates{true};
     bool fMinimizeOnClose;
     QString language;
     BitcoinUnit m_display_bitcoin_unit;

@@ -414,12 +414,14 @@ void BitcoinApplication::initializeResult(bool success, interfaces::BlockAndHead
         window->showMinimized();
     }
     Q_EMIT windowShown(window);
+    window->startupUpdateCheck();
 
 #ifdef ENABLE_WALLET
     // Now that initialization/startup is done, process any command-line
     // bloz: URIs or payment requests:
     if (paymentServer) {
         connect(paymentServer, &PaymentServer::receivedPaymentRequest, window, &BitcoinGUI::handlePaymentRequest);
+        connect(paymentServer, &PaymentServer::receivedAddressProofRequest, window, &BitcoinGUI::handleAddressProofRequest);
         connect(window, &BitcoinGUI::receivedURI, paymentServer, &PaymentServer::handleURIOrFile);
         connect(paymentServer, &PaymentServer::message, [this](const QString& title, const QString& message, unsigned int style) {
             window->message(title, message, style);
