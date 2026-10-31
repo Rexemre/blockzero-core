@@ -49,7 +49,7 @@ algorithm used by Monero. RandomX is built to run fast on a normal computer's CP
 and *badly* on ASICs and GPUs. The result:
 
 - **Your everyday PC is competitive again.** No mining rig, no datacenter.
-- **No head start for anyone.** The chain was launched and mined openly from block 1 — no premine, no presale, no team allocation.
+- **No head start for anyone.** The chain was launched and mined openly from block 1 — no premine, no presale and no team allocation at launch. A fixed share of every block (20% by default, 10% consensus minimum) goes to the openly auditable [Development Fund](https://bloz.org/community/fund/), which pays contributors (103,268 BLOZ paid out so far, every payment published).
 - **Home mining again.** Download the node, start mining, earn blocks — when a normal computer was enough, before hashrate belonged to warehouses.
 
 This is **not** Bitcoin and not a token on someone else's chain. It is a fresh
